@@ -1,0 +1,71 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body, #main {
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#main {
+  display: flex;
+  flex-direction: column;
+
+  &>.progress {
+    flex: 0 0 auto;
+  }
+}
+
+.progress {
+  text-align: center;
+
+  &.done {
+    display: none;
+  }
+}
+
+.panes {
+  display: flex;
+  flex: 1 1 auto;
+
+  &>.filter, &>.token-list {
+    width: 50%;
+    flex: 0 0 auto;
+  }
+}
+
+.token-list {
+  position: absolute; // allows height: 100% to work
+  height: 100%; // allows overflow-y: auto to work
+  overflow-y: auto;
+  padding: 1rem;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    border-bottom: 1px solid black;
+  }
+
+  td {
+    border-top: 1px solid #eee;
+  }
+
+  td, th {
+    text-align: left;
+    padding: .5rem 1rem;
+  }
+
+  .frequency, .n-documents {
+    width: 1px; // take the minimum amount of space
+    text-align: right;
+  }
+}
