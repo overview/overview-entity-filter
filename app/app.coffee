@@ -1,4 +1,6 @@
+debug = require('debug')('app')
 express = require('express')
+Lazy = require('lazy.js')
 oboe = require('oboe')
 morgan = require('morgan')
 tokenize = require('overview-js-tokenizer').tokenize
@@ -8,6 +10,14 @@ app = express()
 
 ProgressInterval = 500 # ms between sends
 MaxNTokens = 500 # tokens send to client
+
+Filters = {}
+(->
+  for key, config of require('./token-sets')
+    debug("Loading #{config.path()}...")
+    tokenSet = config.readSync()
+    Filters[key] = (token) -> tokenSet.test(token)
+)()
 
 # Turn on logging
 switch process.env.NODE_ENV
@@ -43,7 +53,7 @@ app.get '/generate', (req, res) ->
   res.header('Content-Type', 'application/json')
   res.write('[{"progress":0}')
 
-  sendProgress = -> console.log('sendProgress'); res.write(",{\"progress\":#{nDocuments / nDocumentsTotal}}")
+  sendProgress = -> res.write(",{\"progress\":#{nDocuments / nDocumentsTotal}}")
   interval = setInterval(sendProgress, ProgressInterval)
 
   stream = oboe
@@ -81,8 +91,10 @@ app.get '/generate', (req, res) ->
 
   stream.done ->
     tokens = tokenBin.getTokensByFrequency()
-      # .filter(...)
-      .slice(0, MaxNTokens)
+    tokens = Lazy(tokens)
+      .filter((token) -> Filters.geonames(token.name))
+      .take(MaxNTokens)
+      .toArray()
 
     finishResponse(tokens: tokens)
 

@@ -13,7 +13,7 @@ module.exports = class App
     throw 'Must pass options.apiToken, a String' if !@options.apiToken
 
     @_currentStream = null # The current stream, so we can abort it
-    @filters = [] # Array of String filter keys
+    @filters = [ 'location' ] # Array of String filter keys
 
   # Starts an HTTP request to stream the tokens again
   refresh: ->

@@ -1,2 +1,4 @@
 node_modules
 public
+data/allCountries.txt
+data/allCountries.zip
