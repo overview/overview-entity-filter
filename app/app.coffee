@@ -10,19 +10,18 @@ app = express()
 ProgressInterval = 500 # ms between sends
 MaxNTokens = 500 # tokens send to client
 
-Filters = {}
-(->
-  for key, config of require('./token-sets')
-    debug("Loading #{key}...")
-    Filters[key] = config.load()
-  null
-)()
+Filters = require('./token-sets')
 
 # Turn on logging
 switch process.env.NODE_ENV
   when 'test' then # do nothing
   when 'development' then app.use(morgan('dev'))
   else app.use(morgan('combined'))
+
+# Parses "geonames,stop.en" -> [ Filters.geonames, Filters["stop.en"] ]
+parseFilterString = (filterString) ->
+  for key in (filterString || '').split(',') when Filters.hasOwnProperty(key)
+    Filters[key]
 
 # Returns an HTML page with JavaScript.
 #
@@ -56,9 +55,8 @@ app.get '/generate', (req, res) ->
   sendProgress = -> res.write(",{\"progress\":#{nDocuments / nDocumentsTotal}}")
   interval = setInterval(sendProgress, ProgressInterval)
 
-  includeFilters = [
-    Filters.geonames
-  ]
+  includeFilters = parseFilterString(req.query.include)
+  excludeFilters = parseFilterString(req.query.exclude)
 
   stream = oboe
     url: "#{req.query.server}/api/v1/document-sets/#{req.query.documentSetId}/documents?fields=text&stream=true"
@@ -71,11 +69,23 @@ app.get '/generate', (req, res) ->
 
   stream.node 'items.*', (doc) ->
     tokens = tokenize(doc.text)
+    toAdd = []
 
     # Tokens aren't unigrams here, so there could be a crazy number of them. We
     # need to filter them before adding to the TokenBin.
-    for filter in includeFilters
-      tokenBin.addTokens(filter.findTokensFromUnigrams(tokens))
+    if includeFilters.length
+      tokensString = tokens.join(' ')
+      for filter in includeFilters
+        moreToAdd = filter.findTokensFromUnigrams(tokensString)
+        toAdd = toAdd.concat(moreToAdd)
+    else
+      toAdd = tokens
+
+    for excludeFilter in excludeFilters
+      newToAdd = (token for token in toAdd when !excludeFilter.test(token))
+      toAdd = newToAdd
+
+    tokenBin.addTokens(toAdd)
 
     nDocuments++
 

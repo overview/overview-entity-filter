@@ -20,16 +20,16 @@ module.exports = class TokenSet
 
   # Returns an Array of ngram tokens that appear in the set.
   #
-  # The input is an Array of unigram tokens. To form ngrams, we'll concatenate
-  # them with spaces. (We'll also normalize by setting them lowercase.)
+  # The input is a space-separated String of unigram tokens. They won't
+  # necessarily be uppercase/lowercase, because the token finder might care
+  # about case.
   #
-  # We must stay memory-efficient: assume there is a super-high number of
-  # unique ngrams in the array of unigrams (which, therefore, may be
-  # super-long).
+  # We must stay memory-efficient: assume there are ~100k unique unigrams tops,
+  # but make no assumptions about the number of ngrams.
   #
   # The return value may contain duplicates.
   findTokensFromUnigrams: (unigrams) ->
-    unigramsBuffer = new Buffer(unigrams.join(' ').toLowerCase(), 'utf-8') # Encode as binary
+    unigramsBuffer = new Buffer(unigrams, 'utf-8') # Encode as binary
 
     startPositions = new Array(0) # a (fake) circular buffer, max size maxNgramLength
 

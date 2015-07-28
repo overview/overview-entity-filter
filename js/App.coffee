@@ -13,7 +13,8 @@ module.exports = class App
     throw 'Must pass options.apiToken, a String' if !@options.apiToken
 
     @_currentStream = null # The current stream, so we can abort it
-    @filters = [ 'location' ] # Array of String filter keys
+    @include = []
+    @exclude = []
 
   # Starts an HTTP request to stream the tokens again
   refresh: ->
@@ -39,28 +40,33 @@ module.exports = class App
   # * `server`
   # * `documentSetId`
   # * `apiToken`
-  # * `filters`, a comma-separated list of Strings
+  # * `include`, a comma-separated list of Strings
+  # * `exclude`, a comma-separated list of Strings
   _getOptions: ->
     server: @options.server
     documentSetId: @options.documentSetId
     apiToken: @options.apiToken
-    filters: @filters
+    include: (@include || []).join(',')
+    exclude: (@exclude || []).join(',')
 
   # Sets up the HTML
   render: ->
-    @filterView = new FilterView()
-    @tokenListView = new TokenListView()
-
     @$el.html('''
       <div class="panes">
-        <div class="filter"></div>
+        <div class="filter-list"></div>
         <div class="token-list"></div>
       </div>
       <div class="progress"></div>
     ''')
 
     @progressView = new ProgressView(@$el.find('.progress')).render()
-    @filterView = new FilterView(@$el.find('.filter')).render()
+    @filterView = new FilterView(
+      @$el.find('.filter-list'),
+      include: []
+      exclude: []
+      onSetInclude: (include) => @include = include; @refresh()
+      onSetExclude: (exclude) => @exclude = exclude; @refresh()
+    ).render()
     @tokenListView = new TokenListView(@$el.find('.token-list')).render()
 
     @

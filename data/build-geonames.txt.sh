@@ -13,7 +13,7 @@ DIR="$(dirname "$0")"
 # * Normalize: trim strings (broken by previous normalization)
 # * Normalize: lowercase
 # * Normalize: strip all but first 5 words
-# * Filter out duplicate place names (this is the only slow part)
+# * Sort and filter out duplicate place names (this is the only slow part)
 unzip -p "$DIR"/allCountries.zip \
   | cut -f2,4 \
   | perl -pe 's/[\t,]/\n/g' \
