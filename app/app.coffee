@@ -1,6 +1,5 @@
 debug = require('debug')('app')
 express = require('express')
-Lazy = require('lazy.js')
 oboe = require('oboe')
 morgan = require('morgan')
 tokenize = require('overview-js-tokenizer').tokenize
@@ -14,9 +13,9 @@ MaxNTokens = 500 # tokens send to client
 Filters = {}
 (->
   for key, config of require('./token-sets')
-    debug("Loading #{config.path()}...")
-    tokenSet = config.readSync()
-    Filters[key] = (token) -> tokenSet.test(token)
+    debug("Loading #{key}...")
+    Filters[key] = config.loadSync()
+  null
 )()
 
 # Turn on logging
@@ -46,6 +45,7 @@ app.get('/metadata', (req, res) -> res.status(204).header('Access-Control-Allow-
 #       { tokens: [ { name: 'foo', nDocuments: 3, frequency: 6 }, ... ] }
 #     ]
 app.get '/generate', (req, res) ->
+  t1 = new Date()
   nDocuments = 0
   nDocumentsTotal = 1
   tokenBin = new TokenBin([])
@@ -55,6 +55,10 @@ app.get '/generate', (req, res) ->
 
   sendProgress = -> res.write(",{\"progress\":#{nDocuments / nDocumentsTotal}}")
   interval = setInterval(sendProgress, ProgressInterval)
+
+  includeFilters = [
+    Filters.geonames
+  ]
 
   stream = oboe
     url: "#{req.query.server}/api/v1/document-sets/#{req.query.documentSetId}/documents?fields=text&stream=true"
@@ -66,9 +70,14 @@ app.get '/generate', (req, res) ->
     oboe.drop
 
   stream.node 'items.*', (doc) ->
+    tokens = tokenize(doc.text)
+
+    # Tokens aren't unigrams here, so there could be a crazy number of them. We
+    # need to filter them before adding to the TokenBin.
+    for filter in includeFilters
+      tokenBin.addTokens(filter.findTokensFromUnigrams(tokens))
+
     nDocuments++
-    tokens = tokenize(doc.text).map((t) -> t.toLowerCase())
-    tokenBin.addTokens(tokens)
 
     oboe.drop
 
@@ -88,14 +97,10 @@ app.get '/generate', (req, res) ->
     res.write(JSON.stringify(json))
     res.end(']')
     interval = undefined
+    console.log("Request duration: #{new Date() - t1}")
 
   stream.done ->
-    tokens = tokenBin.getTokensByFrequency()
-    tokens = Lazy(tokens)
-      .filter((token) -> Filters.geonames(token.name))
-      .take(MaxNTokens)
-      .toArray()
-
+    tokens = tokenBin.getTokensByFrequency().slice(0, MaxNTokens)
     finishResponse(tokens: tokens)
 
   # Stop streaming when the client goes away

@@ -1,72 +1,62 @@
 fs = require('fs')
-zlib = require('zlib')
-BloomFilter = require('bloomfilter').BloomFilter
+bf = require('overview-js-bloom-filter')
 
-# Stores and loads bloom filters, in ../data/*.bloom.gz
+TokenSet = require('./TokenSet')
+
+# Stores and loads bloom filters, in ../data/*.bloom
 #
 # (We'll store these files offline and load them at runtime.)
 #
-# A bloom filter stores a lot of data in a tiny amount of space. It has two
-# operations:
+# These files store an enormous amount of data in a relatively small amount of
+# space. See https://www.jasondavies.com/bloomfilter/
+module.exports = class BloomFilterTokenSet extends TokenSet
+  constructor: (@bloomFilter, maxNgramSize) ->
+    super(maxNgramSize)
+
+  test: (token, start, end) -> @bloomFilter.test(token, start, end)
+
+# Builds bloom filter data and writes it to a file.
 #
-# * add(token): adds a token to the set.
-# * test(token): returns true if the token was added, else *probably* false
+# Usage:
 #
-# The "probably" gives enormous space savings. For instance, with p=0.0005
-# chance of false positives, a 
-module.exports = class BloomFilterTokenSet
-  constructor: (@basename, @m, @k) ->
+#   tokens = [ 'the', 'quick', 'brown', 'fox' ]
+#   BloomFilterTokenSet.writeSync('path/to/set.bloom', 200, 2, tokens)
+#
+# Arguments:
+#
+# * path: path of file to write
+# * m, k: bloom filter parameters. Calculate here: http://hur.st/bloomfilter
+# * tokens: Array of String tokens
+BloomFilterTokenSet.writeSync = (path, m, k, tokens) ->
+  bloomFilter = new bf.BloomFilter(m, k)
+  bloomFilter.add(token) for token in tokens
 
-  path: -> "#{__dirname}/../data/#{@basename}.bloom.gz"
+  fs.writeFileSync(path, bloomFilter.serialize())
 
-  # Returns a set that tests for inclusion
-  #
-  # Usage:
-  #
-  #   config = new BloomFilterTokenSet('my-set', 10000, 10)
-  #   buf = fs.readFileSync(config.path())
-  #   tokenSet = config.load(buf)
-  #
-  #   tokenSet.test('foo') # true or false
-  #   tokenSet.test('bar') # true or false
-  #   ...
-  load: (gzippedData) ->
-    data = zlib.gunzipSync(gzippedData)
+# Creates a bloom filter from a filename.
+#
+# If you choose the wrong k value, the resulting bloom filter won't match the
+# right tokens. Make sure it's the same k value as you used in writeSync().
+#
+# Usage:
+#
+#   tokenSet = BloomFilterTokenSet.loadSync('path/to/set.bloom', 2, 3)
+#   tokenSet.test('foo') # true or false
+#   ...
+#
+# Arguments:
+#
+# * path: path of file to read. It must have been written by writeSync()
+# * k: bloom filter parameter used in writeSync()
+BloomFilterTokenSet.loadSync = (path, maxNgramSize) ->
+  buf = fs.readFileSync(path)
+  bloomFilter = bf.unserialize(buf)
 
-    buckets = new Int32Array(data.length / 4)
-    for i in [ 0 ... data.length / 4 ]
-      buckets[i] = data.readInt32BE(i * 4, true)
+  new BloomFilterTokenSet(bloomFilter, maxNgramSize)
 
-    new BloomFilter(buckets, @k)
+class BloomFilterTokenSet.Factory
+  constructor: (@path, @m, @k, @maxNgramSize) ->
 
-  # Calls `load()` on the contents of `path()`.
-  #
-  # Usage:
-  #
-  #   config = new BloomFilterTokenSet('my-set', 10000, 10)
-  #   tokenSet = config.readSync()
-  #   tokenSet.test('foo') # true or false
-  #   tokenSet.test('bar') # true or false
-  readSync: ->
-    buf = fs.readFileSync(@path())
-    @load(buf)
+  loadSync: -> BloomFilterTokenSet.loadSync(@path, @maxNgramSize)
 
-  # Helps build a .bloom.gz file.
-  #
-  # Usage:
-  #
-  #   config = new BloomFilterTokenSet('my-set', 100000, 10)
-  #   buf = config.buildBloomGzBuffer(aHugeArrayOfTokens)
-  #   fs.writeFileSync(config.path(), buf)
-  buildBloomGzBuffer: (tokens) ->
-    bloomFilter = new BloomFilter(@m, @k)
-    bloomFilter.add(token) for token in tokens
-    data = bloomFilter.buckets # an Int32Array of data
-    buf = new Buffer(data.length * 4)
-    buf.writeInt32BE(int, i * 4, true) for int, i in bloomFilter.buckets
-    zlib.gzipSync(buf)
-
-  # Calls `buildBloomGzBuffer()` and then writes to `path()`, synchronously.
-  writeBloomGzBufferSync: (tokens) ->
-    buf = @buildBloomGzBuffer(tokens)
-    fs.writeFileSync(@path(), buf)
+  writeSync: (tokens) -> BloomFilterTokenSet.writeSync(@path, @m, @k, tokens)
