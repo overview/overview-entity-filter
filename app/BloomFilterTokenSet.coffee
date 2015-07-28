@@ -57,6 +57,6 @@ BloomFilterTokenSet.loadSync = (path, maxNgramSize) ->
 class BloomFilterTokenSet.Factory
   constructor: (@path, @m, @k, @maxNgramSize) ->
 
-  loadSync: -> BloomFilterTokenSet.loadSync(@path, @maxNgramSize)
+  load: -> BloomFilterTokenSet.loadSync(@path, @maxNgramSize)
 
   writeSync: (tokens) -> BloomFilterTokenSet.writeSync(@path, @m, @k, tokens)

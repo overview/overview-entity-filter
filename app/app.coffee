@@ -14,7 +14,7 @@ Filters = {}
 (->
   for key, config of require('./token-sets')
     debug("Loading #{key}...")
-    Filters[key] = config.loadSync()
+    Filters[key] = config.load()
   null
 )()
 

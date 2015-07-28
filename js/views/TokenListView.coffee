@@ -31,6 +31,5 @@ module.exports = class TokenListView
   # Renders the token list.
   render: ->
     html = @template(tokenList: @tokenList)
-    console.log(html)
     @$el.html(html)
     @
