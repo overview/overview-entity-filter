@@ -24,8 +24,7 @@ module.exports = class TextTokenSet extends TokenSet
       new NativeSet(buffer)
     )()
 
-  test: (token, start, end) ->
-    @_getSet().contains(token.slice(start, end))
+  test: (token) -> @_getSet().contains(token)
 
   findTokensFromUnigrams: (unigrams) ->
     unigramsBuffer = new Buffer(unigrams.toLowerCase(), 'utf-8') # Encode as binary
