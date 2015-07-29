@@ -1,8 +1,15 @@
+$ = require('jquery')
 template = require('lodash.template')
 
 module.exports = class TokenListView
-  constructor: (@$el) ->
+  constructor: (@$el, options={}) ->
+    throw 'Must pass options.doSearch, a Function' if 'doSearch' not of options
+
+    @_doSearch = options.doSearch
+
     @tokenList = []
+
+    @$el.on('click', 'td.name', (e) => @_onClickName(e))
 
   template: template('''
     <table>
@@ -33,3 +40,7 @@ module.exports = class TokenListView
     html = @template(tokenList: @tokenList)
     @$el.html(html)
     @
+
+  _onClickName: (e) ->
+    token = $(e.currentTarget).text()
+    @_doSearch(token)

@@ -67,6 +67,20 @@ module.exports = class App
       onSetInclude: (include) => @include = include; @refresh()
       onSetExclude: (exclude) => @exclude = exclude; @refresh()
     ).render()
-    @tokenListView = new TokenListView(@$el.find('.token-list')).render()
+    @tokenListView = new TokenListView(@$el.find('.token-list'), doSearch: (token) => @postSearch(token)).render()
 
     @
+
+  # Tells the parent frame to search for a token
+  postSearch: (token) ->
+    quotedToken = if /\b(and|or|not)\b/.test(token)
+      # Put the token in quotes. This is hardly a perfect quoting mechanism,
+      # but it should handle all real-world use cases.
+      "\"#{token}\""
+    else
+      token
+
+    window.parent.postMessage({
+      call: 'setDocumentListParams'
+      args: [ q: quotedToken ]
+    }, @options.server)
