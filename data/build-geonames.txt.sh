@@ -23,7 +23,6 @@ unzip -p "$DIR"/allCountries.zip \
   | perl -ne 'binmode(STDIN, ":utf8"); binmode(STDOUT, ":utf8"); print lc' \
   | cut -d' ' -f1-5 \
   | LC_ALL=C sort -u --parallel=2 --buffer-size=40% \
-  | zopfli 
   > "$DIR"/geonames.txt
 
 zopfli "$DIR"/geonames.txt

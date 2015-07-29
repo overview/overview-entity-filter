@@ -19,7 +19,7 @@ unzip -p "$DIR"/names.zip app_c.csv \
   | perl -pe 's/[- \(\)!`"\/&{}~]+/ /g' \
   | perl -pe 's/^ +| +$//g' \
   | perl -ne 'binmode(STDIN, ":utf8"); binmode(STDOUT, ":utf8"); print lc' \
-  | LC_ALL=C sort -u --parallel=2 --buffer-size=40% \
+  | LC_ALL=C sort -u \
   > "$DIR"/us-surnames.txt
 
 zopfli "$DIR"/us-surnames.txt
