@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Parses allCountries.zip, from http://download.geonames.org/export/dump/, and
-# writes a list of unique, newline-separated place names to geonames.txt
+# writes a list of unique, newline-separated place names to geonames.txt.gz
 
 DIR="$(dirname "$0")"
 

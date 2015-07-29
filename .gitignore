@@ -1,4 +1,6 @@
 node_modules
 public
 data/allCountries.zip
+data/names.zip
 data/geonames.txt
+data/us-surnames.txt

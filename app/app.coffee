@@ -69,14 +69,22 @@ app.get '/generate', (req, res) ->
 
   stream.node 'items.*', (doc) ->
     tokens = tokenize(doc.text)
-    toAdd = []
+
+    toAdd = [] # list of all tokens, with repeats
+    toAddSet = {} # token -> null. Ensure when we union we don't count tokens twice
 
     # Tokens aren't unigrams here, so there could be a crazy number of them. We
     # need to filter them before adding to the TokenBin.
     if includeFilters.length
       tokensString = tokens.join(' ')
-      for filter in includeFilters
+      for filter, filterIndex in includeFilters
         moreToAdd = filter.findTokensFromUnigrams(tokensString)
+        if toAdd.length
+          # Remove duplicates: tokens we found in a previous filter
+          moreToAdd = (token for token in moreToAdd when token not of toAddSet)
+        if filterIndex < includeFilters.length - 1
+          # Remember these tokens for the next filter
+          (toAddSet[token] = null) for token in moreToAdd
         toAdd = toAdd.concat(moreToAdd)
     else
       toAdd = tokens
