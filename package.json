@@ -28,7 +28,6 @@
   "homepage": "https://github.com/overview/overview-word-filter",
   "dependencies": {
     "autoprefixer": "^5.2.0",
-    "bloomfilter": "0.0.16",
     "brfs": "^1.4.0",
     "browserify": "^11.0.0",
     "coffee-script": "^1.9.3",
@@ -52,7 +51,6 @@
     "lodash.template": "^3.6.2",
     "morgan": "^1.6.1",
     "oboe": "^2.1.2",
-    "overview-js-bloom-filter": "0.0.2",
     "overview-js-token-bin": "0.0.5",
     "overview-js-tokenizer": "0.0.2",
     "query-string": "^2.3.0",
