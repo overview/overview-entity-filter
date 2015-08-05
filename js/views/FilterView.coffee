@@ -62,8 +62,6 @@ module.exports = class FilterView
       m = /(include|exclude):(.*)/.exec(value.name)
       filters[m[1]].push(m[2])
 
-    console.log(filters)
-
     @options.onSelectFilters(filters)
 
   _onSubmit: (e) ->
