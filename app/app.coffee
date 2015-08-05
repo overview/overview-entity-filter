@@ -68,7 +68,7 @@ app.get '/generate', (req, res) ->
     oboe.drop
 
   stream.node 'items.*', (doc) ->
-    tokens = tokenize(doc.text)
+    tokens = tokenize(doc.text.toLowerCase())
 
     toAdd = [] # list of all tokens, with repeats
     toAddSet = {} # token -> null. Ensure when we union we don't count tokens twice

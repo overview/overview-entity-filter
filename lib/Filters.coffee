@@ -1,3 +1,5 @@
+NumberFormat = /^[0-9\.,]*$/
+
 module.exports =
   geonames:
     id: 'geonames'
@@ -74,4 +76,37 @@ module.exports =
     name: 'Short (3-character) words'
     descriptionHtml: 'All one-, two- or three-letter words'
     canInclude: false
+    canExclude: true
+
+  'wordnet-words':
+    id: 'wordnet-words'
+    version: 1
+    logic: 'text'
+    name: 'WordNet English words'
+    descriptionHtml: '(FIXME: nix this data set?) Over 117,000 English words, plus their plurals and conjugations, from <a href="http://wordnet.princeton.edu/">WordNet</a>, supplemented by a list of common <a href="http://www.d.umn.edu/~tpederse/Group01/WordNet/wordnet-stoplist.html">pronouns, prepositions and conjunctions</a>'
+    path: 'data/wordnet-words.txt.gz'
+    maxNgramSize: 1
+    canInclude: false
+    canExclude: true
+
+  'googlebooks-words.en':
+    id: 'googlebooks-words.en'
+    version: 1
+    logic: 'text'
+    name: 'Google Books English words'
+    descriptionHtml: 'The most common 50,000 uncapitalized words in English books, according to <a href="http://storage.googleapis.com/books/ngrams/books/datasetsv2.html">Google Books</a> <small>(<a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>)</small>'
+    path: 'data/googlebooks-words.en.txt.gz'
+    maxNgramSize: 1
+    canInclude: false
+    canExclude: true
+
+  'numbers':
+    id: 'numbers'
+    version: 1
+    logic: 'function'
+    function: (token) -> NumberFormat.test(token)
+    maxNgramSize: 1
+    name: 'Numbers'
+    descriptionHtml: 'Any word composed solely of digits, commas and periods'
+    canInclude: true
     canExclude: true
