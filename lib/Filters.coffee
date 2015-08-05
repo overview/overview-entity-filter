@@ -18,7 +18,7 @@ module.exports =
     id: 'stop.en'
     version: 1
     logic: 'text'
-    name: 'English stop words'
+    name: 'English: stop words'
     descriptionHtml: 'Extremely common English words'
     path: 'data/stop.en.txt'
     maxNgramSize: 1
@@ -36,47 +36,14 @@ module.exports =
     canInclude: true
     canExclude: false
 
-  "short.1":
-    id: 'short.1'
-    version: 1
-    logic: 'function'
-    function: (token) -> token.length <= 1
-    maxNgramSize: 1
-    name: 'Short (1-character) words'
-    descriptionHtml: 'All single-letter words'
-    canInclude: false
-    canExclude: true
-
-  "short.2":
-    id: 'short.2'
-    version: 1
-    logic: 'function'
-    function: (token) -> token.length <= 2
-    maxNgramSize: 1
-    name: 'Short (2-character) words'
-    descriptionHtml: 'All one- or two-letter words'
-    canInclude: false
-    canExclude: true
-
   "short.3":
     id: 'short.3'
     version: 1
     logic: 'function'
     function: (token) -> token.length <= 3
     maxNgramSize: 1
-    name: 'Short (3-character) words'
+    name: 'Short words'
     descriptionHtml: 'All one-, two- or three-letter words'
-    canInclude: false
-    canExclude: true
-
-  'wordnet-words':
-    id: 'wordnet-words'
-    version: 1
-    logic: 'text'
-    name: 'WordNet English words'
-    descriptionHtml: '(FIXME: nix this data set?) Over 117,000 English words, plus their plurals and conjugations, from <a href="http://wordnet.princeton.edu/">WordNet</a>, supplemented by a list of common <a href="http://www.d.umn.edu/~tpederse/Group01/WordNet/wordnet-stoplist.html">pronouns, prepositions and conjunctions</a>'
-    path: 'data/wordnet-words.txt.gz'
-    maxNgramSize: 1
     canInclude: false
     canExclude: true
 
