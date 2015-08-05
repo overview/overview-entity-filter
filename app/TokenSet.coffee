@@ -29,27 +29,24 @@ module.exports = class TokenSet
   #
   # The return value may contain duplicates.
   findTokensFromUnigrams: (unigrams) ->
-    unigramsBuffer = new Buffer(unigrams, 'utf-8') # Encode as binary
-
     startPositions = new Array(0) # a (fake) circular buffer, max size maxNgramLength
 
     ret = []
 
     testNgrams = (endPosition) =>
       for startPosition in startPositions
-        if @test(unigramsBuffer, startPosition, endPosition)
-          s = unigramsBuffer.toString('utf-8', startPosition, endPosition)
-          ret.push(s)
+        s = unigrams.slice(startPosition, endPosition)
+        ret.push(s) if @test(s)
       null
 
-    for byte, pos in unigramsBuffer
-      if byte == 0x20 # Space
+    for char, pos in unigrams
+      if char == ' ' # Space
         testNgrams(pos)
         startPositions.shift() if startPositions.length == @maxNgramSize
         startPositions.push(pos + 1)
 
     while startPositions.length > 1
-      testNgrams(unigramsBuffer.length)
+      testNgrams(unigrams.length)
       startPositions.shift()
 
     ret
