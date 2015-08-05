@@ -5,90 +5,86 @@ Filters = require('../../lib/Filters')
 
 module.exports = class FilterView
   constructor: (@$el, @options) ->
-    throw new Error('Must pass options.include, an Array of filter codes') if 'include' not of @options
-    throw new Error('Must pass options.exclude, an Array of filter codes') if 'exclude' not of @options
-    throw new Error('Must set options.onSetInclude, a callback') if 'onSetInclude' not of @options
-    throw new Error('Must set options.onSetExclude, a callback') if 'onSetExclude' not of @options
+    throw new Error('Must set options.onSelectFilters, a callback') if 'onSelectFilters' not of @options
 
     @events.forEach ([ ev, selector, callback ]) =>
       @$el.on(ev, selector, (args...) => @[callback](args...))
 
   events: [
-    [ 'submit', '.include form', '_onSubmitInclude' ]
-    [ 'submit', '.exclude form', '_onSubmitExclude' ]
+    [ 'click', 'input', '_onChange' ]
+    [ 'change', 'input', '_onChange' ]
+    [ 'submit', 'form', '_onSubmit' ]
   ]
 
   templates:
     main: template('''
-      <div class="include">
-        <p>Only include these:</p>
-        <ul>
-          <%= includeListHtml %>
-          <li><%= includeFormHtml %></li>
-        </ul>
-      </div>
-      <div class="exclude">
-        <p>...and filter out any of these:</p>
-        <ul>
-          <%= excludeListHtml %>
-          <li><%= excludeFormHtml %></li>
-        <ul>
-        </ul>
-      </div>
-    ''')
-
-    form: template('''
       <form method="post" action="#">
-        <select name="filter">
-          <option value="">Choose a set of words…</option>
-          <% filters.forEach(function(filter) { %>
-            <option value="<%- filter.id %>"><%- filter.name %></option>
-          <% }); %>
-        </select>
-        <button type="submit">Add</button>
-        <p class="filter-description empty"></p>
+        <div class="include">
+          <h3>Search for only these:</h3>
+          <ul><%= includeFiltersHtml %></ul>
+        </div>
+        <div class="exclude">
+          <h3>… then remove any of these:</h3>
+          <ul><%= excludeFiltersHtml %></ul>
+        </div>
       </form>
     ''')
 
-    filters: template('''
-      <% filters.forEach(function(filter) { %>
-        <li data-filter-id="<%- filter.id %>">
-          <h4><%- filter.name %></h4>
-          <p class="description"><%= filter.descriptionHtml %></p>
-        </li>
-      <% }); %>
+    filter: template('''
+      <li class="filter" data-filter-id="<%- filter.id %>">
+        <label>
+          <input type="checkbox" name="<%- includeOrExclude %>:<%- filter.id %>" >
+          <strong><%- filter.name %></strong>
+          <span class="description"><%= filter.descriptionHtml %></span>
+        </label>
+      </li>
     ''')
 
   render: ->
     allFilters = (f for __, f of Filters).sort((a, b) -> a.name.localeCompare(b.name))
 
-    usedFilters = {}
-    (usedFilters[filterId] = null) for filterId in @options.include.concat(@options.exclude)
-
-    includeListHtml = @templates.filters(filters: allFilters.filter((f) => f.id in @options.include))
-    excludeListHtml = @templates.filters(filters: allFilters.filter((f) => f.id in @options.exclude))
-    includeFormHtml = @templates.form(filters: allFilters.filter((f) -> f.id not of usedFilters))
-    excludeFormHtml = @templates.form(filters: allFilters.filter((f) -> f.id not of usedFilters))
+    includeFiltersHtml = (@templates.filter(filter: f, includeOrExclude: 'include') for f in allFilters when f.canInclude).join('')
+    excludeFiltersHtml = (@templates.filter(filter: f, includeOrExclude: 'exclude') for f in allFilters when f.canExclude).join('')
 
     html = @templates.main
-      includeListHtml: includeListHtml
-      excludeListHtml: excludeListHtml
-      includeFormHtml: includeFormHtml
-      excludeFormHtml: excludeFormHtml
+      includeFiltersHtml: includeFiltersHtml
+      excludeFiltersHtml: excludeFiltersHtml
+
     @$el.html(html)
     @
 
-  _onSubmit: (e, key, setter) ->
-    e.preventDefault()
-    $form = $(e.currentTarget)
-    filterCode = $form.find('select[name=filter]').val()
-    return if !filterCode
-    currentList = @options[key]
-    nextList = currentList.slice()
-    nextList.push(filterCode)
-    setter(nextList)
-    @options[key] = nextList
-    @render()
+  _callSetter: ->
+    filters =
+      include: []
+      exclude: []
 
-  _onSubmitInclude: (e) -> @_onSubmit(e, 'include', @options.onSetInclude)
-  _onSubmitExclude: (e) -> @_onSubmit(e, 'exclude', @options.onSetExclude)
+    for value in @$el.find('form').serializeArray()
+      m = /(include|exclude):(.*)/.exec(value.name)
+      filters[m[1]].push(m[2])
+
+    console.log(filters)
+
+    @options.onSelectFilters(filters)
+
+  _onSubmit: (e) ->
+    e.preventDefault()
+    @_callSetter()
+
+  _onChange: (e) ->
+    # If we're checking an include, uncheck the exclude, and vice-versa
+    reverse =
+      include: 'exclude'
+      exclude: 'include'
+
+    name = e.currentTarget.getAttribute('name')
+    m = /(include|exclude):(.*)/.exec(name)
+
+    otherName = "#{reverse[m[1]]}:#{m[2]}"
+    @$el.find("input[name=\"#{otherName}\"]").prop('checked', false)
+
+    # Update "selected" classes on <li> elements
+    @$el.find('li').removeClass('selected')
+    @$el.find('input:checked').closest('li').addClass('selected')
+
+    # Now, send our changes up the stream
+    @_callSetter()

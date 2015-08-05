@@ -1,5 +1,7 @@
 @text-color: #0d1223;
 @text-muted: #918f90;
+@background-selected: #f7f7f7;
+@border-color: #eee;
 
 * {
   box-sizing: border-box;
@@ -14,6 +16,7 @@ html, body, #main {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  font-family: sans-serif;
 
   color: @text-color;
   line-height: 1.5rem;
@@ -37,19 +40,23 @@ html, body, #main {
 }
 
 .panes {
-  display: flex;
   flex: 1 1 auto;
+  position: relative;
 
   &>.filter-list, &>.token-list {
     width: 50%;
-    flex: 0 0 auto;
+
+    position: absolute; // allows height: 100% to work
+    height: 100%; // allows overflow-y: auto to work
+    overflow-y: auto;
+  }
+
+  &>.token-list {
+    left: 50%;
   }
 }
 
 .token-list {
-  position: absolute; // allows height: 100% to work
-  height: 100%; // allows overflow-y: auto to work
-  overflow-y: auto;
   padding: 1rem;
 
   table {
@@ -81,23 +88,59 @@ html, body, #main {
 }
 
 .filter-list {
-  padding: 1rem;
+  padding: 1rem 0;
 
-  p {
+  h3 {
     margin: .5rem 0;
+    font: inherit;
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.2rem;
+  }
+
+  ul {
+    list-style: none;
+    margin: 1rem 0;
+    padding: 0;
   }
 
   li {
-    padding: .5rem 0;
+    position: relative;
+    padding: .5rem 1rem;
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid transparent;
 
-    h4 {
-      margin: 0;
+    &.selected {
+      background: @background-selected;
+      border-top-color: @border-color;
+      border-bottom-color: @border-color;
+      & + li.selected {
+        border-top-color: transparent; // collapse borders
+      }
     }
 
-    p {
-      color: @text-muted;
+    label {
+      cursor: pointer;
+    }
+
+    input {
+      position: absolute;
+      height: 100%;
+    }
+
+    strong, span.description {
+      display: block;
+      margin-left: 2rem;
+    }
+
+    strong {
+      font-weight: normal;
+    }
+
+    span.description {
       font-size: .9rem;
-      margin-top: 0;
+      font-family: serif;
+      color: @text-muted;
     }
   }
 }

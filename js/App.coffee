@@ -13,8 +13,9 @@ module.exports = class App
     throw 'Must pass options.apiToken, a String' if !@options.apiToken
 
     @_currentStream = null # The current stream, so we can abort it
-    @include = []
-    @exclude = []
+    @filters =
+      include: []
+      exclude: []
 
   # Starts an HTTP request to stream the tokens again
   refresh: ->
@@ -46,8 +47,8 @@ module.exports = class App
     server: @options.server
     documentSetId: @options.documentSetId
     apiToken: @options.apiToken
-    include: (@include || []).join(',')
-    exclude: (@exclude || []).join(',')
+    include: @filters.include.join(',')
+    exclude: @filters.exclude.join(',')
 
   # Sets up the HTML
   render: ->
@@ -62,10 +63,7 @@ module.exports = class App
     @progressView = new ProgressView(@$el.find('.progress')).render()
     @filterView = new FilterView(
       @$el.find('.filter-list'),
-      include: []
-      exclude: []
-      onSetInclude: (include) => @include = include; @refresh()
-      onSetExclude: (exclude) => @exclude = exclude; @refresh()
+      onSelectFilters: (filters) => @filters = filters; @refresh()
     ).render()
     @tokenListView = new TokenListView(@$el.find('.token-list'), doSearch: (token) => @postSearch(token)).render()
 
