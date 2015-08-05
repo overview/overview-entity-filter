@@ -99,6 +99,12 @@ app.get '/generate', (req, res) ->
 
     oboe.drop
 
+  stop = ->
+    stream.abort() # Prevent further events
+    clearInterval(interval)
+    interval = undefined
+    console.log("Request duration: #{new Date() - t1}")
+
   finishResponse = (json) ->
     if json.error?.thrown?
       # oboe's JSON objects defy stringifying. Clone it without the "thrown"
@@ -109,20 +115,17 @@ app.get '/generate', (req, res) ->
           statusCode: e.statusCode
           body: e.body
           jsonBody: e.jsonBody
-    clearInterval(interval)
-    stream.abort() # Prevent further events
+    stop()
     res.write(',')
     res.write(JSON.stringify(json))
     res.end(']')
-    interval = undefined
-    console.log("Request duration: #{new Date() - t1}")
 
   stream.done ->
     tokens = tokenBin.getTokensByFrequency().slice(0, MaxNTokens)
     finishResponse(tokens: tokens)
 
   # Stop streaming when the client goes away
-  req.on('close', -> finishResponse(error: 'request aborted'))
+  req.on('close', stop)
 
   # Stop streaming when the streaming fails
   stream.fail((err) -> finishResponse(error: err))
