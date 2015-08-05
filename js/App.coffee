@@ -6,6 +6,10 @@ FilterView = require('./views/FilterView')
 TokenListView = require('./views/TokenListView')
 ProgressView = require('./views/ProgressView')
 
+DefaultFilters =
+  include: []
+  exclude: [ 'googlebooks-words.en', 'numbers' ]
+
 module.exports = class App
   constructor: (@$el, @options) ->
     throw 'Must pass options.server, the Overview server URL' if !@options.server
@@ -14,8 +18,8 @@ module.exports = class App
 
     @_currentStream = null # The current stream, so we can abort it
     @filters =
-      include: []
-      exclude: []
+      include: DefaultFilters.include
+      exclude: DefaultFilters.exclude
 
   # Starts an HTTP request to stream the tokens again
   refresh: ->
@@ -68,6 +72,7 @@ module.exports = class App
     @progressView = new ProgressView(@$el.find('.progress')).render()
     @filterView = new FilterView(
       @$el.find('.filter-list'),
+      filters: @filters
       onSelectFilters: (filters) => @filters = filters; @refresh()
     ).render()
     @tokenListView = new TokenListView(@$el.find('.token-list'), doSearch: (token) => @postSearch(token)).render()

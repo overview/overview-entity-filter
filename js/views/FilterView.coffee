@@ -5,6 +5,7 @@ Filters = require('../../lib/Filters')
 
 module.exports = class FilterView
   constructor: (@$el, @options) ->
+    throw new Error('Must set options.filters, an Object') if 'filters' not of @options
     throw new Error('Must set options.onSelectFilters, a callback') if 'onSelectFilters' not of @options
 
     @events.forEach ([ ev, selector, callback ]) =>
@@ -51,7 +52,20 @@ module.exports = class FilterView
       excludeFiltersHtml: excludeFiltersHtml
 
     @$el.html(html)
+
+    for filterId in @options.filters.include
+      @$el.find("[name=\"include:#{filterId}\"]").prop('checked', true)
+    for filterId in @options.filters.exclude
+      @$el.find("[name=\"exclude:#{filterId}\"]").prop('checked', true)
+
+    @_renderSelected()
+
     @
+
+  # Sets each li class to "selected" iff it is selected
+  _renderSelected: ->
+    @$el.find('li').removeClass('selected')
+    @$el.find('input:checked').closest('li').addClass('selected')
 
   _callSetter: ->
     filters =
@@ -68,21 +82,18 @@ module.exports = class FilterView
     e.preventDefault()
     @_callSetter()
 
-  _onChange: (e) ->
-    # If we're checking an include, uncheck the exclude, and vice-versa
+  # If complementName is "include:geonames", uncheck "exclude:geonames"
+  _ensureUnchecked: (complementName) ->
     reverse =
       include: 'exclude'
       exclude: 'include'
+    m = /(include|exclude):(.*)/.exec(complementName)
 
+    name = "#{reverse[m[1]]}:#{m[2]}"
+    @$el.find("input[name=\"#{name}\"]").prop('checked', false)
+
+  _onChange: (e) ->
     name = e.currentTarget.getAttribute('name')
-    m = /(include|exclude):(.*)/.exec(name)
-
-    otherName = "#{reverse[m[1]]}:#{m[2]}"
-    @$el.find("input[name=\"#{otherName}\"]").prop('checked', false)
-
-    # Update "selected" classes on <li> elements
-    @$el.find('li').removeClass('selected')
-    @$el.find('input:checked').closest('li').addClass('selected')
-
-    # Now, send our changes up the stream
+    @_ensureUnchecked(name)
+    @_renderSelected()
     @_callSetter()
