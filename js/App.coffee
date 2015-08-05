@@ -19,11 +19,14 @@ module.exports = class App
 
   # Starts an HTTP request to stream the tokens again
   refresh: ->
+    options = @_getOptions()
+    return if @lastOptions? && @lastOptions.include == options.include && @lastOptions.exclude == options.exclude
+
     @_currentStream?.abort()
 
     @tokenListView.setTokenList([]).render()
 
-    @_currentStream = oboe("/generate?#{queryString.stringify(@_getOptions())}")
+    @_currentStream = oboe("/generate?#{queryString.stringify(options)}")
       .node '![*]', (obj) =>
         if obj.progress?
           @progressView.setProgress(obj.progress)
@@ -33,6 +36,8 @@ module.exports = class App
         else
           throw new Error("Unexpected object in stream: #{JSON.stringify(obj)}")
         oboe.drop
+
+    @lastOptions = options
 
   # Returns the query-string options we'll pass to /generate.
   #
