@@ -36,17 +36,6 @@ module.exports =
     canInclude: true
     canExclude: false
 
-  "icij-offshore-leaks-names":
-    id: 'icij-offshore-leaks-names'
-    version: 1
-    logic: 'text'
-    name: 'ICIJ Offshore Leaks names'
-    descriptionHtml: 'Over 100,000 terms from the <a href="http://offshoreleaks.icij.org/search">ICIJ Offshore Leaks Database</a>, a directory of companies in 10 offshore jurisdictions'
-    path: 'data/icij-offshore-leaks-names.txt.gz'
-    maxNgramSize: 1
-    canInclude: true
-    canExclude: false
-
   "short.1":
     id: 'short.1'
     version: 1
