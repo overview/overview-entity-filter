@@ -1,16 +1,18 @@
 NumberFormat = /^[0-9\.,]*$/
 
 module.exports =
-  geonames:
-    id: 'geonames'
+  'geonames.political':
+    id: 'geonames.political'
     version: 1
     logic: 'text'
-    name: 'Geonames'
-    descriptionHtml: 'Around 12 million place names, from <a href="http://www.geonames.org/">geonames.org</a>'
-    path: 'data/geonames.txt.gz'
+    name: 'Geonames: Political Boundaries'
+    descriptionHtml: 'About 300,000 political regions worldwide, such as countries or administrative ares, from <a href="http://www.geonames.org/">geonames.org</a>'
+    path: 'data/geonames-political.txt.gz'
     maxNgramSize: 5
     canInclude: true
     canExclude: false
+    # To find maxNgramSize:
+    # zcat geonames-political.txt.gz | tr -d -c ' \n' | awk '{ if (length > max) max = length } END { print max + 1 }'
 
   "stop.en":
     id: 'stop.en'
@@ -89,13 +91,24 @@ module.exports =
     canInclude: false
     canExclude: true
 
-  'googlebooks-words.en':
-    id: 'googlebooks-words.en'
+  'googlebooks-words.eng':
+    id: 'googlebooks-words.eng'
     version: 1
     logic: 'text'
-    name: 'Google Books English words'
+    name: 'English: Google Books words'
     descriptionHtml: 'The most common 50,000 uncapitalized words in English books, according to <a href="http://storage.googleapis.com/books/ngrams/books/datasetsv2.html">Google Books</a> <small>(<a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>)</small>'
-    path: 'data/googlebooks-words.en.txt.gz'
+    path: 'data/googlebooks-words.eng.txt.gz'
+    maxNgramSize: 1
+    canInclude: false
+    canExclude: true
+
+  'googlebooks-words.rus':
+    id: 'googlebooks-words.rus'
+    version: 1
+    logic: 'text'
+    name: 'Russian: Google Books words'
+    descriptionHtml: 'The most common 50,000 uncapitalized words in Russian books, according to <a href="http://storage.googleapis.com/books/ngrams/books/datasetsv2.html">Google Books</a> <small>(<a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>)</small>'
+    path: 'data/googlebooks-words.rus.txt.gz'
     maxNgramSize: 1
     canInclude: false
     canExclude: true

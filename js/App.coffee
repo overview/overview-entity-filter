@@ -8,7 +8,7 @@ ProgressView = require('./views/ProgressView')
 
 DefaultFilters =
   include: []
-  exclude: [ 'googlebooks-words.en', 'numbers' ]
+  exclude: [ 'googlebooks-words.eng', 'numbers' ]
 
 module.exports = class App
   constructor: (@$el, @options) ->
