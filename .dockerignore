@@ -1,7 +1,5 @@
 node_modules
 public
 data/allCountries.zip
-data/names.zip
 data/geonames.txt
-data/us-surnames.txt
 data/googlebooks-*-all-1gram-20120701-*.gz
