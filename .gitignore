@@ -1,5 +1,5 @@
 node_modules
 public
 data/allCountries.zip
-data/geonames.txt
+data/geonames-*.txt
 data/googlebooks-*-all-1gram-20120701-*.gz

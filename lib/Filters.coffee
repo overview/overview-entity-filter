@@ -14,7 +14,18 @@ module.exports =
     # To find maxNgramSize:
     # zcat geonames-political.txt.gz | tr -d -c ' \n' | awk '{ if (length > max) max = length } END { print max + 1 }'
 
-  "stop.en":
+  'geonames.cities':
+    id: 'geonames.cities'
+    version: 1
+    logic: 'text'
+    name: 'Geonames: Cities'
+    descriptionHtml: 'Any city with population over 10,000, plus alternate names, from <a href="http://www.geonames.org/">geonames.org</a>'
+    path: 'data/geonames-cities.txt.gz'
+    maxNgramSize: 5
+    canInclude: true
+    canExclude: false
+
+  'stop.en':
     id: 'stop.en'
     version: 1
     logic: 'text'
@@ -25,7 +36,7 @@ module.exports =
     canInclude: false
     canExclude: true
 
-  "short.3":
+  'short.3':
     id: 'short.3'
     version: 1
     logic: 'function'
