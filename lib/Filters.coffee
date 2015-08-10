@@ -6,7 +6,7 @@ module.exports =
     version: 1
     logic: 'text'
     name: 'Geonames: Political Boundaries'
-    descriptionHtml: 'About 300,000 political regions worldwide, such as countries or administrative ares, from <a href="http://www.geonames.org/">geonames.org</a>'
+    descriptionHtml: 'About 300,000 countries and administrative regions worldwide, plus variations and translations, from <a href="http://www.geonames.org/">geonames.org</a>'
     path: 'data/geonames-political.txt.gz'
     maxNgramSize: 5
     canInclude: true
@@ -19,8 +19,19 @@ module.exports =
     version: 1
     logic: 'text'
     name: 'Geonames: Cities'
-    descriptionHtml: 'Any city with population over 10,000, plus alternate names, from <a href="http://www.geonames.org/">geonames.org</a>'
+    descriptionHtml: 'Any city with population over 10,000, plus variations and translations, from <a href="http://www.geonames.org/">geonames.org</a>'
     path: 'data/geonames-cities.txt.gz'
+    maxNgramSize: 5
+    canInclude: true
+    canExclude: false
+
+  'geonames.countries':
+    id: 'geonames.countries'
+    version: 1
+    logic: 'text'
+    name: 'Geonames: Countries'
+    descriptionHtml: 'Any country or disputed country, plus variations and translations, from <a href="http://www.geonames.org/">geonames.org</a>'
+    path: 'data/geonames-countries.txt.gz'
     maxNgramSize: 5
     canInclude: true
     canExclude: false
