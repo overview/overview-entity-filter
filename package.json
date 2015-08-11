@@ -52,11 +52,10 @@
     "morgan": "^1.6.1",
     "oboe": "^2.1.2",
     "overview-js-token-bin": "0.0.5",
-    "overview-js-tokenizer": "0.0.2",
+    "overview-js-tokenizer": "0.1.0",
     "query-string": "^2.3.0",
     "vinyl-source-stream": "^1.1.0",
-    "watchify": "^3.3.0",
-    "xxhashjs": "^0.1.1"
+    "watchify": "^3.3.0"
   },
   "devDependencies": {
     "byline": "^4.2.1"
