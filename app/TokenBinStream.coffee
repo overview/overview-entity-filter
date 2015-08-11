@@ -17,7 +17,7 @@ class UnigramTokenListBuilder
     @tokenBin = new TokenBin([])
 
   addDocumentText: (text) ->
-    tokens = tokenize(text)
+    tokens = tokenize(text.toLowerCase())
     @tokenBin.addTokens(tokens)
 
   getTokensByFrequency: ->
