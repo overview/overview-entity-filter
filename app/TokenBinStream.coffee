@@ -6,6 +6,67 @@ TokenBin = require('overview-js-token-bin')
 ReadDelay = 500 # ms between read() and push(). If 0, we'll push() non-stop.
 MaxNTokens = 500 # tokens send to client
 
+# Builds a list of wanted Tokens, assuming there are only unigrams in the text.
+#
+# We have a special code path when we know it's impossible for the result to
+# contain anything but unigrams. In that case, we assume the maximum number of
+# unique tokens to be <100k, so we just throw every token into one TokenBin
+# and then exclude every invalid token from the result.
+class UnigramTokenListBuilder
+  constructor: (@includeFilters, @excludeFilters) ->
+    @tokenBin = new TokenBin([])
+
+  addDocumentText: (text) ->
+    tokens = tokenize(text)
+    @tokenBin.addTokens(tokens)
+
+  getTokensByFrequency: ->
+    ret = @tokenBin.getTokensByFrequency()
+
+    for filter in @includeFilters
+      ret = (token for token in ret when filter.test(token.name))
+
+    for filter in @excludeFilters
+      ret = (token for token in ret when !filter.test(token.name))
+
+    ret
+
+# Builds a list of wanted Tokens, including ngrams.
+#
+# Since we allow ngrams, we assume there could be an arbitrarily-high number of
+# ngrams. To keep memory under control, we can't store unwanted tokens
+# temporarily, like we would in UnigramTokenListBuilder.
+class NgramTokenListBuilder
+  constructor: (@includeFilters, @excludeFilters) ->
+    @tokenBin = new TokenBin([])
+
+  addDocumentText: (text) ->
+    tokens = tokenize(text)
+    tokensString = tokens.join(' ')
+
+    toAdd = [] # list of all tokens, with repeats
+    toAddSet = {} # token -> null. Ensure when we union we don't count tokens twice
+
+    for filter, filterIndex in @includeFilters
+      moreToAdd = filter.findTokensFromUnigrams(tokensString)
+      if toAdd.length
+        # Remove duplicates: tokens we found in a previous filter
+        moreToAdd = (token for token in moreToAdd when token not of toAddSet)
+      if filterIndex < @includeFilters.length - 1
+        # Remember these tokens for the next filter
+        (toAddSet[token] = null) for token in moreToAdd
+      toAdd = toAdd.concat(moreToAdd)
+
+    @tokenBin.addTokens(toAdd)
+
+  getTokensByFrequency: ->
+    ret = @tokenBin.getTokensByFrequency()
+
+    for filter in @excludeFilters
+      ret = (token for token in ret when !filter.test(token.name))
+
+    ret
+
 # Outputs JSON objects corresponding to the current status.
 #
 # Each object looks like this:
@@ -22,7 +83,7 @@ MaxNTokens = 500 # tokens send to client
 # Any of the above variables may be unset. If `progress` is unset, that means
 # it is 1.0.
 #
-# Handle errors, too: they do happen.
+# Callers should handle 'error' events. They do happen.
 module.exports = class TokenBinStream extends stream.Readable
   constructor: (@options) ->
     throw new Error('Must pass options.server, the Overview server base URL') if !@options.server
@@ -34,9 +95,18 @@ module.exports = class TokenBinStream extends stream.Readable
 
     @_readTimeout = null # If set, the user called read() and we haven't called push() for it yet
 
+    unigramsOnly = true
+    for filter in @options.filters.include when filter.maxNgramSize > 1
+      unigramsOnly = false
+      break
+
+    @tokenListBuilder = if unigramsOnly
+      new UnigramTokenListBuilder(@options.filters.include, @options.filters.exclude)
+    else
+      new NgramTokenListBuilder(@options.filters.include, @options.filters.exclude)
+
     @nDocuments = 0
     @nDocumentsTotal = 1
-    @tokenBin = new TokenBin([])
 
   _start: ->
     @stream = oboe
@@ -64,36 +134,7 @@ module.exports = class TokenBinStream extends stream.Readable
 
   # Handles a single document's text
   _onDocumentText: (text) ->
-    tokens = tokenize(text.toLowerCase())
-
-    includeFilters = @options.filters.include
-    excludeFilters = @options.filters.exclude
-
-    toAdd = [] # list of all tokens, with repeats
-    toAddSet = {} # token -> null. Ensure when we union we don't count tokens twice
-
-    # Tokens aren't unigrams here, so there could be a crazy number of them. We
-    # need to filter them before adding to the TokenBin.
-    if includeFilters.length
-      tokensString = tokens.join(' ')
-      for filter, filterIndex in includeFilters
-        moreToAdd = filter.findTokensFromUnigrams(tokensString)
-        if toAdd.length
-          # Remove duplicates: tokens we found in a previous filter
-          moreToAdd = (token for token in moreToAdd when token not of toAddSet)
-        if filterIndex < includeFilters.length - 1
-          # Remember these tokens for the next filter
-          (toAddSet[token] = null) for token in moreToAdd
-        toAdd = toAdd.concat(moreToAdd)
-    else
-      toAdd = tokens
-
-    for excludeFilter in excludeFilters
-      newToAdd = (token for token in toAdd when !excludeFilter.test(token))
-      toAdd = newToAdd
-
-    @tokenBin.addTokens(toAdd)
-
+    @tokenListBuilder.addDocumentText(text)
     @nDocuments += 1
 
   _clearReadTimeout: ->
@@ -102,13 +143,15 @@ module.exports = class TokenBinStream extends stream.Readable
 
   # Sends the final results, then EOF
   _onStreamDone: ->
-    @push(tokens: @tokenBin.getTokensByFrequency().slice(0, MaxNTokens))
+    @push(tokens: @tokenListBuilder.getTokensByFrequency().slice(0, MaxNTokens))
     @push(null)
 
     @_clearReadTimeout() # No more reads, please
 
   # Sends an error, then EOF
   _onStreamError: (err) ->
+    return if @destroyed # oboe creates an error when we abort it.
+
     if err.statusCode?
       @emit('error', new Error("Overview server responded: #{JSON.stringify(err)}"))
     else
@@ -120,6 +163,7 @@ module.exports = class TokenBinStream extends stream.Readable
   #
   # Callers should call this when the client stops listening.
   destroy: ->
-    @stream.abort()
+    @destroyed = true
+    @stream?.abort() # It might be the case that @stream was never created
 
     @_clearReadTimeout() # No more reads, please
