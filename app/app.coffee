@@ -2,15 +2,10 @@ debug = require('debug')('app')
 express = require('express')
 oboe = require('oboe')
 morgan = require('morgan')
-tokenize = require('overview-js-tokenizer').tokenize
-TokenBin = require('overview-js-token-bin')
+
+TokenBinStream = require('./TokenBinStream')
 
 app = express()
-
-ProgressInterval = 500 # ms between sends
-MaxNTokens = 500 # tokens send to client
-
-Filters = require('./token-sets')
 
 # Turn on logging
 switch process.env.NODE_ENV
@@ -19,6 +14,7 @@ switch process.env.NODE_ENV
   else app.use(morgan('combined'))
 
 # Parses "geonames,stop.en" -> [ Filters.geonames, Filters["stop.en"] ]
+Filters = require('./token-sets')
 parseFilterString = (filterString) ->
   for key in (filterString || '').split(',') when Filters.hasOwnProperty(key)
     Filters[key]
@@ -45,90 +41,29 @@ app.get('/metadata', (req, res) -> res.status(204).header('Access-Control-Allow-
 #     ]
 app.get '/generate', (req, res) ->
   t1 = new Date()
-  nDocuments = 0
-  nDocumentsTotal = 1
-  tokenBin = new TokenBin([])
-
-  res.header('Content-Type', 'application/json')
-  res.write('[{"progress":0}')
-
-  sendProgress = -> res.write(",{\"progress\":#{nDocuments / nDocumentsTotal}}")
-  interval = setInterval(sendProgress, ProgressInterval)
 
   includeFilters = parseFilterString(req.query.include)
   excludeFilters = parseFilterString(req.query.exclude)
 
-  stream = oboe
-    url: "#{req.query.server}/api/v1/document-sets/#{req.query.documentSetId}/documents?fields=text&stream=true"
-    headers:
-      Authorization: "Basic #{new Buffer("#{req.query.apiToken}:x-auth-token", 'ascii').toString('base64')}"
+  res.header('Content-Type', 'application/json')
+  res.write('[{"progress":0}')
 
-  stream.node 'pagination.total', (total) ->
-    nDocumentsTotal = total
-    oboe.drop
+  stream = new TokenBinStream
+    server: req.query.server
+    documentSetId: req.query.documentSetId
+    apiToken: req.query.apiToken
+    filters:
+      include: includeFilters
+      exclude: excludeFilters
 
-  stream.node 'items.*', (doc) ->
-    tokens = tokenize(doc.text.toLowerCase())
-
-    toAdd = [] # list of all tokens, with repeats
-    toAddSet = {} # token -> null. Ensure when we union we don't count tokens twice
-
-    # Tokens aren't unigrams here, so there could be a crazy number of them. We
-    # need to filter them before adding to the TokenBin.
-    if includeFilters.length
-      tokensString = tokens.join(' ')
-      for filter, filterIndex in includeFilters
-        moreToAdd = filter.findTokensFromUnigrams(tokensString)
-        if toAdd.length
-          # Remove duplicates: tokens we found in a previous filter
-          moreToAdd = (token for token in moreToAdd when token not of toAddSet)
-        if filterIndex < includeFilters.length - 1
-          # Remember these tokens for the next filter
-          (toAddSet[token] = null) for token in moreToAdd
-        toAdd = toAdd.concat(moreToAdd)
-    else
-      toAdd = tokens
-
-    for excludeFilter in excludeFilters
-      newToAdd = (token for token in toAdd when !excludeFilter.test(token))
-      toAdd = newToAdd
-
-    tokenBin.addTokens(toAdd)
-
-    nDocuments++
-
-    oboe.drop
-
-  stop = ->
-    stream.abort() # Prevent further events
-    clearInterval(interval)
-    interval = undefined
-    console.log("Request duration: #{new Date() - t1}")
-
-  finishResponse = (json) ->
-    if json.error?.thrown?
-      # oboe's JSON objects defy stringifying. Clone it without the "thrown"
-      e = json.error
-      json =
-        error:
-          thrown: e.thrown.toString()
-          statusCode: e.statusCode
-          body: e.body
-          jsonBody: e.jsonBody
-    stop()
-    res.write(',')
-    res.write(JSON.stringify(json))
-    res.end(']')
-
-  stream.done ->
-    tokens = tokenBin.getTokensByFrequency().slice(0, MaxNTokens)
-    finishResponse(tokens: tokens)
+  stream.on('data', (obj) -> res.write(',' + JSON.stringify(obj)))
+  stream.on('error', (err) -> res.write(',' + JSON.stringify(error: err.toString())))
+  stream.on('end', -> res.end(']'); console.log("Request duration: #{new Date() - t1}"))
 
   # Stop streaming when the client goes away
-  req.on('close', stop)
-
-  # Stop streaming when the streaming fails
-  stream.fail((err) -> finishResponse(error: err))
+  req.on 'close', ->
+    stream.removeAllListeners()
+    stream.destroy()
 
 app.use(express.static('public'))
 
