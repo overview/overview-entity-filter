@@ -57,8 +57,5 @@
     "query-string": "^2.3.0",
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.3.0"
-  },
-  "devDependencies": {
-    "byline": "^4.2.1"
   }
 }
