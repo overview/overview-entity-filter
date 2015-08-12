@@ -52,6 +52,7 @@
     "lazy.js": "^0.4.0",
     "lodash.template": "^3.6.2",
     "morgan": "^1.6.1",
+    "numeral": "^1.5.3",
     "oboe": "^2.1.2",
     "overview-js-token-bin": "0.0.5",
     "query-string": "^2.3.0",

@@ -1,5 +1,6 @@
 $ = require('jquery')
 template = require('lodash.template')
+numeral = require('numeral')
 
 module.exports = class TokenListView
   constructor: (@$el, options={}) ->
@@ -30,8 +31,8 @@ module.exports = class TokenListView
           <tr>
             <td class="actions"><button type="button" class="blacklist" title="Hide this entity" data-token-name="<%- token.name %>">&times;</button></td>
             <td class="name"><%- token.name %></td>
-            <td class="frequency"><%- token.frequency %></td>
-            <td class="n-documents"><%- token.nDocuments %></td>
+            <td class="frequency"><%- numeral(token.frequency).format('0,0') %></td>
+            <td class="n-documents"><%- numeral(token.nDocuments).format('0,0') %></td>
           </tr>
         <% }); %>
       </tbody>
@@ -43,7 +44,9 @@ module.exports = class TokenListView
 
   # Renders the token list.
   render: ->
-    html = @template(tokenList: @tokenList)
+    html = @template
+      tokenList: @tokenList
+      numeral: numeral
     @$el.html(html)
 
     @trs = trs = {} # Hash of token-name to <tr> HTMLElement
