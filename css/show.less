@@ -95,6 +95,7 @@ html, body, #main {
   }
 
   td.actions {
+    width: 1px; // take the minimum amount of space
     padding-left: 0;
     padding-right: 0;
 
@@ -120,6 +121,11 @@ html, body, #main {
   .frequency, .n-documents {
     width: 1px; // take the minimum amount of space
     text-align: right;
+  }
+
+  td.frequency, td.n-documents {
+    color: @text-muted;
+    font-size: .9rem;
   }
 }
 
