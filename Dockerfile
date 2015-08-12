@@ -7,7 +7,10 @@ RUN groupadd -r app && useradd -r -g app app
 # use changes to package.json to force Docker not to use the cache
 # when we change our application's nodejs dependencies:
 COPY package.json /tmp/package.json
-RUN cd /tmp && npm install --production
+RUN apt-get update \
+      && apt-get -y install libicu-dev \
+      && cd /tmp \
+      && npm install --production
 RUN mkdir -p /opt/app && cp -a /tmp/node_modules /opt/app/
 
 # From here we load our application's code in, therefore the previous docker
