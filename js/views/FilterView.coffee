@@ -5,14 +5,18 @@ Filters = require('../../lib/Filters')
 
 module.exports = class FilterView
   constructor: (@$el, @options) ->
+    throw new Error('Must set options.blacklist, a Blacklist') if 'blacklist' not of @options
     throw new Error('Must set options.filters, an Object') if 'filters' not of @options
     throw new Error('Must set options.onSelectFilters, a callback') if 'onSelectFilters' not of @options
 
     @events.forEach ([ ev, selector, callback ]) =>
       @$el.on(ev, selector, (args...) => @[callback](args...))
 
+    @options.blacklist.on('change', => @_renderBlacklist())
+
   events: [
     [ 'click', 'input', '_onChange' ]
+    [ 'click', 'button.unblacklist', '_onClickUnblacklist' ]
     [ 'change', 'input', '_onChange' ]
     [ 'submit', 'form', '_onSubmit' ]
   ]
@@ -22,11 +26,15 @@ module.exports = class FilterView
       <form method="post" action="#">
         <div class="include">
           <h3>Search for only these:</h3>
-          <ul><%= includeFiltersHtml %></ul>
+          <ul class="filters"><%= includeFiltersHtml %></ul>
         </div>
         <div class="exclude">
           <h3>… then remove any of these:</h3>
-          <ul><%= excludeFiltersHtml %></ul>
+          <ul class="filters"><%= excludeFiltersHtml %></ul>
+        </div>
+        <div class="blacklist hide">
+          <h3>… and omit these, too:</h3>
+          <ul class="tokens"></ul>
         </div>
       </form>
     ''')
@@ -38,6 +46,13 @@ module.exports = class FilterView
           <strong><%- filter.name %></strong>
           <span class="description"><%= filter.descriptionHtml %></span>
         </label>
+      </li>
+    ''')
+
+    blacklistItem: template('''
+      <li class="token">
+        <button class="unblacklist" type="button" title="Un-hide this entity" data-token-name="<%- tokenName %>">❌</button>
+        <span class="name"><%- tokenName %></span>
       </li>
     ''')
 
@@ -59,6 +74,7 @@ module.exports = class FilterView
       @$el.find("[name=\"exclude:#{filterId}\"]").prop('checked', true)
 
     @_renderSelected()
+    @_renderBlacklist()
 
     @
 
@@ -66,6 +82,14 @@ module.exports = class FilterView
   _renderSelected: ->
     @$el.find('li').removeClass('selected')
     @$el.find('input:checked').closest('li').addClass('selected')
+
+  # Re-renders the blacklist
+  _renderBlacklist: ->
+    blacklistHtml = (@templates.blacklistItem(tokenName: t) for t in @options.blacklist.toArray()).join('')
+
+    @$el.find('.blacklist')
+      .toggleClass('hide', blacklistHtml.length == 0)
+      .find('ul.tokens').html(blacklistHtml)
 
   _callSetter: ->
     filters =
@@ -97,3 +121,7 @@ module.exports = class FilterView
     @_ensureUnchecked(name)
     @_renderSelected()
     @_callSetter()
+
+  _onClickUnblacklist: (e) ->
+    tokenName = e.currentTarget.getAttribute('data-token-name')
+    @options.blacklist.remove(tokenName)

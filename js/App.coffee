@@ -2,6 +2,7 @@ $ = require('jquery')
 oboe = require('oboe')
 queryString = require('query-string')
 
+Blacklist = require('./models/Blacklist')
 FilterView = require('./views/FilterView')
 TokenListView = require('./views/TokenListView')
 ProgressView = require('./views/ProgressView')
@@ -17,6 +18,7 @@ module.exports = class App
     throw 'Must pass options.apiToken, a String' if !@options.apiToken
 
     @_currentStream = null # The current stream, so we can abort it
+    @blacklist = new Blacklist()
     @filters =
       include: DefaultFilters.include
       exclude: DefaultFilters.exclude
@@ -70,12 +72,15 @@ module.exports = class App
     ''')
 
     @progressView = new ProgressView(@$el.find('.progress')).render()
-    @filterView = new FilterView(
-      @$el.find('.filter-list'),
+    @filterView = new FilterView(@$el.find('.filter-list'),
       filters: @filters
+      blacklist: @blacklist
       onSelectFilters: (filters) => @filters = filters; @refresh()
     ).render()
-    @tokenListView = new TokenListView(@$el.find('.token-list'), doSearch: (token) => @postSearch(token)).render()
+    @tokenListView = new TokenListView(@$el.find('.token-list'),
+      blacklist: @blacklist
+      doSearch: (token) => @postSearch(token)
+    ).render()
 
     @
 

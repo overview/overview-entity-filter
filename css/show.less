@@ -1,10 +1,15 @@
 @text-color: #0d1223;
 @text-muted: #918f90;
+@brand-danger: #d9534f;
 @background-selected: #f7f7f7;
 @border-color: #eee;
 
 * {
   box-sizing: border-box;
+}
+
+.hide {
+  display: none;
 }
 
 html, body, #main {
@@ -72,13 +77,44 @@ html, body, #main {
     border-top: 1px solid #eee;
   }
 
-  td.name {
-    cursor: pointer;
-  }
-
   td, th {
     text-align: left;
     padding: .5rem 1rem;
+  }
+
+  td.name {
+    cursor: pointer; // Because it selects the word
+  }
+
+  td.name, th.name {
+    padding-left: 0; // Because the "remove" button is 1rem wide
+  }
+
+  th.actions {
+    padding: 0;
+  }
+
+  td.actions {
+    padding-left: 0;
+    padding-right: 0;
+
+    button {
+      border: 0;
+      background: transparent;
+      padding: 0;
+      margin: 0;
+      display: inline-block;
+      cursor: pointer;
+      font: inherit;
+      font-weight: bold;
+      width: 1rem;
+      color: @brand-danger;
+      visibility: hidden;
+    }
+  }
+
+  tr:hover td.actions button {
+    visibility: visible;
   }
 
   .frequency, .n-documents {
@@ -104,7 +140,7 @@ html, body, #main {
     padding: 0;
   }
 
-  li {
+  li.filter {
     position: relative;
     padding: .5rem 1rem;
     border-top: 1px solid transparent;
@@ -142,6 +178,26 @@ html, body, #main {
       font-size: .9rem;
       font-family: serif;
       color: @text-muted;
+    }
+  }
+
+  ul.tokens {
+    margin: .5rem;
+
+    li {
+      margin: 0 .5rem;
+      display: inline-block;
+
+      button {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        display: inline-block;
+        cursor: pointer;
+        font: inherit;
+        color: @brand-danger;
+      }
     }
   }
 }
