@@ -1,6 +1,5 @@
 oboe = require('oboe')
 stream = require('stream')
-tokenize = require('overview-js-tokenizer').tokenize
 TokenBin = require('overview-js-token-bin')
 
 ReadDelay = 500 # ms between read() and push(). If 0, we'll push() non-stop.
@@ -16,8 +15,8 @@ class UnigramTokenListBuilder
   constructor: (@includeFilters, @excludeFilters) ->
     @tokenBin = new TokenBin([])
 
-  addDocumentText: (text) ->
-    tokens = tokenize(text.toLowerCase())
+  addDocumentTokens: (tokensString) ->
+    tokens = tokensString.toLowerCase().split(' ')
     @tokenBin.addTokens(tokens)
 
   getTokensByFrequency: ->
@@ -40,9 +39,8 @@ class NgramTokenListBuilder
   constructor: (@includeFilters, @excludeFilters) ->
     @tokenBin = new TokenBin([])
 
-  addDocumentText: (text) ->
-    tokens = tokenize(text)
-    tokensString = tokens.join(' ')
+  addDocumentTokens: (tokensString) ->
+    tokensString = tokensString.toLowerCase()
 
     toAdd = [] # list of all tokens, with repeats
     toAddSet = {} # token -> null. Ensure when we union we don't count tokens twice
@@ -110,12 +108,12 @@ module.exports = class TokenBinStream extends stream.Readable
 
   _start: ->
     @stream = oboe
-      url: "#{@options.server}/api/v1/document-sets/#{@options.documentSetId}/documents?fields=text&stream=true"
+      url: "#{@options.server}/api/v1/document-sets/#{@options.documentSetId}/documents?fields=tokens&stream=true"
       headers:
         Authorization: "Basic #{new Buffer("#{@options.apiToken}:x-auth-token", 'ascii').toString('base64')}"
 
     @stream.node('pagination.total', (total) => @nDocumentsTotal = total; oboe.drop)
-    @stream.node('items.*', (document) => @_onDocumentText(document.text); oboe.drop)
+    @stream.node('items.*', (document) => @_onDocumentTokens(document.tokens); oboe.drop)
     @stream.fail((err) => @_onStreamError(err))
     @stream.done(=> @_onStreamDone())
 
@@ -133,8 +131,8 @@ module.exports = class TokenBinStream extends stream.Readable
     @push(progress: @nDocuments / @nDocumentsTotal)
 
   # Handles a single document's text
-  _onDocumentText: (text) ->
-    @tokenListBuilder.addDocumentText(text)
+  _onDocumentTokens: (tokensString) ->
+    @tokenListBuilder.addDocumentTokens(tokensString)
     @nDocuments += 1
 
   _clearReadTimeout: ->
