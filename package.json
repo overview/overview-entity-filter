@@ -48,7 +48,7 @@
     "jade": "^1.11.0",
     "jquery": "^2.1.4",
     "js-native-ternary-buffer-tree": "0.0.2",
-    "js-sorted-set": "^0.1.1",
+    "js-sorted-set": "^0.2.0",
     "lazy.js": "^0.4.0",
     "lodash.template": "^3.6.2",
     "morgan": "^1.6.1",

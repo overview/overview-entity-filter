@@ -14,6 +14,11 @@ module.exports = class Blacklist extends events.EventEmitter
     @tokenSet.insert(tokenName)
     @emit('change')
 
+  reset: (tokenArray) ->
+    @tokenSet.clear()
+    @tokenSet.insert(token) for token in tokenArray # O(n^2), but should be fast
+    @emit('change')
+
   contains: (tokenName) ->
     @tokenSet.contains(tokenName)
 

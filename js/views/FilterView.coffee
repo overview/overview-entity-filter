@@ -15,7 +15,6 @@ module.exports = class FilterView
     @options.blacklist.on('change', => @_renderBlacklist())
 
   events: [
-    [ 'click', 'input', '_onChange' ]
     [ 'click', 'button.unblacklist', '_onClickUnblacklist' ]
     [ 'change', 'input', '_onChange' ]
     [ 'submit', 'form', '_onSubmit' ]
@@ -56,6 +55,23 @@ module.exports = class FilterView
       </li>
     ''')
 
+  # Resets the filters which are selected.
+  #
+  # This does not emit any signals. Rather, it sets some inputs to checked and
+  # sets others to unchecked.
+  # unchecks the others.
+  setFilters: (filters) ->
+    @$el.find('input[type=checkbox]').prop('checked', false)
+
+    for filterId in filters.include
+      @$el.find("[name=\"include:#{filterId}\"]").prop('checked', true)
+    for filterId in filters.exclude
+      @$el.find("[name=\"exclude:#{filterId}\"]").prop('checked', true)
+
+    @_renderSelected()
+
+    @
+
   render: ->
     allFilters = (f for __, f of Filters).sort((a, b) -> a.name.localeCompare(b.name))
 
@@ -68,10 +84,7 @@ module.exports = class FilterView
 
     @$el.html(html)
 
-    for filterId in @options.filters.include
-      @$el.find("[name=\"include:#{filterId}\"]").prop('checked', true)
-    for filterId in @options.filters.exclude
-      @$el.find("[name=\"exclude:#{filterId}\"]").prop('checked', true)
+    @setFilters(@options.filters)
 
     @_renderSelected()
     @_renderBlacklist()

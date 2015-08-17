@@ -28,7 +28,7 @@ gulp.task 'css', ->
     .pipe(gulp.dest('public'))
 
 gulp.task 'watch-css', [ 'css' ], ->
-  watch 'css/*.less', batch (evs, cb) ->
+  watch 'css/*.(css|less)', batch (evs, cb) ->
     evs.on('end', -> gulp.start('css', cb))
 
 initBrowserify = (options) ->

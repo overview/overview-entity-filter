@@ -7,4 +7,4 @@ $ ->
   options = queryString.parse(location.search)
   app = new App($('#main'), options)
     .render()
-    .refresh()
+    .start()
