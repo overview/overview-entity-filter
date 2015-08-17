@@ -23,9 +23,7 @@ module.exports = class App
     # These defaults will kick in if the server has no state; otherwise,
     # setState() will override them.
     @blacklist = new Blacklist()
-    @filters =
-      include: DefaultFilters.include
-      exclude: DefaultFilters.exclude
+    @filters = DefaultFilters
 
     @blacklist.on('change', => @_saveState())
 
@@ -139,14 +137,18 @@ module.exports = class App
     if state.version? && state.version != 1
       throw new Error("Invalid state object: #{JSON.stringify(state)}")
 
-    # We ignore filter versions for now. (Why did we create filter versions at
-    # all? For forwards-compatibility.)
-    include = Object.keys(state.filters?.include || {})
-    exclude = Object.keys(state.filters?.exclude || {})
+    if 'filters' of state
+      # We ignore filter versions for now. (Why did we create filter versions at
+      # all? For forwards-compatibility.)
+      include = Object.keys(state.filters.include || {})
+      exclude = Object.keys(state.filters.exclude || {})
 
-    @filters = { include: include, exclude: exclude }
-    @filterView.setFilters(@filters)
-    @blacklist.reset(state.blacklist || [])
+      @filters = { include: include, exclude: exclude }
+      @filterView.setFilters(@filters)
+
+    if 'blacklist' of state
+      @blacklist.reset(state.blacklist || [])
+
     @$el.children('.loading').remove()
     @refresh()
 
