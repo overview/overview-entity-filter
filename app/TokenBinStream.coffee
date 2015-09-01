@@ -40,8 +40,6 @@ class NgramTokenListBuilder
     @tokenBin = new TokenBin([])
 
   addDocumentTokens: (tokensString) ->
-    tokensString = tokensString.toLowerCase()
-
     toAdd = [] # list of all tokens, with repeats
     toAddSet = {} # token -> null. Ensure when we union we don't count tokens twice
 

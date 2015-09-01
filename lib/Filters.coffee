@@ -36,6 +36,16 @@ module.exports =
     canInclude: true
     canExclude: false
 
+  'suffixed-companies':
+    id: 'suffixed-companies'
+    version: 1
+    logic: 'suffixedCompanies'
+    name: 'Companies by Suffix'
+    descriptionHtml: 'All series of capitalized words that end in <q>Inc</q>, or other suffixes: AG, B.V, Corp, GmbH, LLC, Ltd, Pty'
+    maxNgramSize: 5
+    canInclude: true
+    canExclude: false
+
   'stop.en':
     id: 'stop.en'
     version: 1
