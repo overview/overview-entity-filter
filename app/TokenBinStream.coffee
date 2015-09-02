@@ -28,6 +28,11 @@ class UnigramTokenListBuilder
     for filter in @excludeFilters
       ret = (token for token in ret when !filter.test(token.name))
 
+    for filter in @includeFilters when filter.getTitle?
+      for token in ret when !token.title
+        title = filter.getTitle(token.name)
+        token.title = title if title?
+
     ret
 
 # Builds a list of wanted Tokens, including ngrams.
@@ -60,6 +65,11 @@ class NgramTokenListBuilder
 
     for filter in @excludeFilters
       ret = (token for token in ret when !filter.test(token.name))
+
+    for filter in @includeFilters when filter.getTitle?
+      for token in ret when !token.title
+        title = filter.getTitle(token.name)
+        token.title = title if title?
 
     ret
 

@@ -71,12 +71,17 @@ html, body, #main {
     border-collapse: collapse;
   }
 
+  table.too-wide {
+    .n-documents { display: none; }
+  }
+
   th {
     border-bottom: 1px solid black;
   }
 
   td {
     border-top: 1px solid #eee;
+    vertical-align: top;
   }
 
   td, th {
@@ -84,11 +89,11 @@ html, body, #main {
     padding: .5rem 1rem;
   }
 
-  td.name {
+  td.token {
     cursor: pointer; // Because it selects the word
   }
 
-  td.name, th.name {
+  td.token, th.token {
     padding-left: 0; // Because the "remove" button is 1rem wide
   }
 
@@ -128,6 +133,12 @@ html, body, #main {
   td.frequency, td.n-documents {
     color: @text-muted;
     font-size: .9rem;
+  }
+
+  span.title {
+    display: block;
+    color: @text-muted;
+    font-size: .8rem;
   }
 }
 

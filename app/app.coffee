@@ -37,7 +37,7 @@ app.get('/metadata', (req, res) -> res.status(204).header('Access-Control-Allow-
 #       { progress: 0.3 },
 #       ...
 #       { progress: 0.99999 },
-#       { tokens: [ { name: 'foo', nDocuments: 3, frequency: 6 }, ... ] }
+#       { tokens: [ { name: 'foo', value: 'Foo', nDocuments: 3, frequency: 6 }, ... ] }
 #     ]
 app.get '/generate', (req, res) ->
   t1 = new Date()

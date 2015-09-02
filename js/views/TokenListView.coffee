@@ -12,25 +12,32 @@ module.exports = class TokenListView
 
     @tokenList = []
 
-    @$el.on('click', 'td.name', (e) => @_onClickName(e))
+    @$el.on('click', 'td.token', (e) => @_onClickToken(e))
     @$el.on('click', 'button.blacklist', (e) => @_onClickBlacklist(e))
     @blacklist.on('change', => @_renderBlacklist())
+
+    $(window).resize(=> @_renderTooWide())
 
   template: template('''
     <table>
       <thead>
         <tr>
           <th class="actions" />
-          <th class="name">Entity</th>
+          <th class="token">Entity</th>
           <th class="frequency">count</th>
           <th class="n-documents">docs</th>
         </tr>
       </thead>
       <tbody>
         <% tokenList.forEach(function(token) { %>
-          <tr>
+          <tr data-token-name="<%- token.name %>">
             <td class="actions"><button type="button" class="blacklist" title="Hide this entity" data-token-name="<%- token.name %>">&times;</button></td>
-            <td class="name"><%- token.name %></td>
+            <td class="token">
+              <span class="name"><%- token.name %></span>
+              <% if (token.title) { %>
+                <span class="title"><%- token.title %></span>
+              <% } %>
+            </td>
             <td class="frequency"><%- numeral(token.frequency).format('0,0') %></td>
             <td class="n-documents"><%- numeral(token.nDocuments).format('0,0') %></td>
           </tr>
@@ -49,20 +56,31 @@ module.exports = class TokenListView
       numeral: numeral
     @$el.html(html)
 
+    @$table = @$el.find('table')
     @trs = trs = {} # Hash of token-name to <tr> HTMLElement
 
-    for td in @$el.find('td.name')
-      trs[$(td).text()] = td.parentNode
+    for tr in @$el.find('tr[data-token-name]')
+      trs[tr.getAttribute('data-token-name')] = tr
 
     @_renderBlacklist()
+    @_renderTooWide()
     @
 
   _renderBlacklist: ->
     for tokenName, tr of @trs
       tr.className = if @blacklist.contains(tokenName) then 'hide' else ''
+    null
 
-  _onClickName: (e) ->
-    token = $(e.currentTarget).text()
+  _renderTooWide: ->
+    return if !@$table?
+
+    @$table.removeClass('too-wide')
+    if @$table.width() > @$el.width()
+      @$table.addClass('too-wide')
+
+  _onClickToken: (e) ->
+    tr = e.currentTarget.parentNode
+    token = tr.getAttribute('data-token-name')
     @_doSearch(token)
 
   _onClickBlacklist: (e) ->

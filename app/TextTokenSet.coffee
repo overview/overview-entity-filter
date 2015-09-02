@@ -26,6 +26,8 @@ module.exports = class TextTokenSet extends TokenSet
 
   test: (token) -> @_getSet().contains(token)
 
+  getTitle: (token) -> @_getSet().get(token)
+
   findTokensFromUnigrams: (unigrams) ->
     unigramsBuffer = new Buffer(unigrams.toLowerCase(), 'utf-8') # Encode as binary
     @_getSet().findAllMatches(unigramsBuffer, @maxNgramSize)
