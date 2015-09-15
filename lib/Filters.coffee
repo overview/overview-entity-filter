@@ -41,7 +41,7 @@ module.exports =
     version: 1
     logic: 'suffixedCompanies'
     name: 'Companies by Suffix'
-    descriptionHtml: 'All series of capitalized words that end in <q>Inc</q>, or other suffixes: AG, B.V, Corp, GmbH, LLC, Ltd, Pty'
+    descriptionHtml: 'All series of capitalized words that end in: AG, B.V, Corp, GmbH, LLC, Ltd, Pty, S.A'
     maxNgramSize: 5
     canInclude: true
     canExclude: false

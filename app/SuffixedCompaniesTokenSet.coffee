@@ -4,11 +4,23 @@ Suffixes = [
   'AG'
   'B.V'
   'Corp'
+  'Corporation'
+  'CORP'
+  'CORPORATION'
   'GmbH'
+  'GMBH'
   'Inc'
+  'INC'
+  'Incorporated'
+  'INCORPORATED'
   'LLC'
   'Ltd'
+  'LTD'
+  'Limited'
+  'LIMITED'
   'Pty'
+  'PTY'
+  'S.A'
 ]
 
 SuffixesSet = {}
