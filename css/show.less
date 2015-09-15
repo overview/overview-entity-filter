@@ -165,10 +165,19 @@ html, body, #main {
     border-top: 1px solid transparent;
     border-bottom: 1px solid transparent;
 
+    span.description {
+      display: none;
+    }
+
     &.selected {
       background: @background-selected;
       border-top-color: @border-color;
       border-bottom-color: @border-color;
+
+      span.description {
+        display: block;
+      }
+
       & + li.selected {
         border-top-color: transparent; // collapse borders
       }
@@ -180,16 +189,16 @@ html, body, #main {
 
     input {
       position: absolute;
-      top: 0;
-      height: 100%;
+      top: .75rem;
+      margin-top: 1px;
     }
 
     strong, span.description {
-      display: block;
       margin-left: 2rem;
     }
 
     strong {
+      display: block;
       font-weight: normal;
     }
 
