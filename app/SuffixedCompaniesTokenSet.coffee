@@ -3,6 +3,7 @@ TokenSet = require('./TokenSet')
 Suffixes = [
   'AG'
   'B.V'
+  'BV'
   'Corp'
   'Corporation'
   'CORP'
@@ -21,6 +22,7 @@ Suffixes = [
   'Pty'
   'PTY'
   'S.A'
+  'SA'
 ]
 
 SuffixesSet = {}
