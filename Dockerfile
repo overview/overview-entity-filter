@@ -6,12 +6,11 @@ RUN groupadd -r app && useradd -r -g app app
 
 # use changes to package.json to force Docker not to use the cache
 # when we change our application's nodejs dependencies:
-COPY package.json /tmp/package.json
+COPY package.json package-lock.json /opt/app/
 RUN apt-get update \
       && apt-get -y install libicu-dev \
-      && cd /tmp \
+      && cd /opt/app \
       && npm install --production
-RUN mkdir -p /opt/app && cp -a /tmp/node_modules /opt/app/
 
 # From here we load our application's code in, therefore the previous docker
 # "layer" thats been cached will be used if possible
@@ -25,9 +24,7 @@ COPY views /opt/app/views/
 
 RUN cd /opt/app && node_modules/.bin/gulp
 
-USER app
+ENV PORT 80
+EXPOSE 80
 WORKDIR /opt/app
-
-ENV PORT 3000
-EXPOSE 3000
-CMD [ "node", "server.js" ]
+CMD /usr/local/bin/node /opt/app/server.js

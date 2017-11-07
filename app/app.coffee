@@ -11,7 +11,7 @@ app = express()
 switch process.env.NODE_ENV
   when 'test' then # do nothing
   when 'development' then app.use(morgan('dev'))
-  else app.use(morgan('combined'))
+  else app.use(morgan('short'))
 
 # Parses "geonames,stop.en" -> [ Filters.geonames, Filters["stop.en"] ]
 Filters = require('./token-sets')
