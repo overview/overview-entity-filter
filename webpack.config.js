@@ -47,7 +47,7 @@ module.exports = {
   plugins: [
     extractLess,
     new HtmlWebpackPlugin({
-      title: 'Word Cloud',
+      title: 'Entity Filter',
       filename: 'show',
       template: 'show.html',
       cache: false,
