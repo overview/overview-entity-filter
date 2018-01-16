@@ -1,7 +1,7 @@
 $ = require('jquery')
 template = require('lodash.template')
 
-Filters = require('../../lib/Filters')
+Filters = require('../../server/Filters')
 
 module.exports = class FilterView
   constructor: (@$el, @options) ->

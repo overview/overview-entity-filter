@@ -1,17 +1,13 @@
 debug = require('debug')('app')
 express = require('express')
+fs = require('fs')
 oboe = require('oboe')
 morgan = require('morgan')
 
 TokenBinStream = require('./TokenBinStream')
 
 app = express()
-
-# Turn on logging
-switch process.env.NODE_ENV
-  when 'test' then # do nothing
-  when 'development' then app.use(morgan('dev'))
-  else app.use(morgan('short'))
+app.use(morgan('short'))
 
 # Parses "geonames,stop.en" -> [ Filters.geonames, Filters["stop.en"] ]
 Filters = require('./token-sets')
@@ -22,10 +18,24 @@ parseFilterString = (filterString) ->
 # Returns an HTML page with JavaScript.
 #
 # The JavaScript will GET /generate
-app.get('/show', (req, res) -> res.render('show.jade'))
+app.get '/show', (req, res, next) ->
+  fs.readFile './dist/show', (err, bytes) ->
+    return next(err) if err
+
+    res
+      .status(200)
+      .header('Content-Type', 'text/html; charset=utf-8')
+      .header('Cache-Control', 'max-age=10')
+      .end(bytes)
 
 # Conform to Overview plugin spec
-app.get('/metadata', (req, res) -> res.status(204).header('Access-Control-Allow-Origin', '*').end())
+app.get '/metadata', (req, res) ->
+  res
+    .status(200)
+    .header('Access-Control-Allow-Origin', '*')
+    .header('Content-Type', 'application/json')
+    .header('Cache-Control', 'max-age=10')
+    .end('{}')
 
 # Streams a JSON Array that the client can parse incrementally.
 #
@@ -46,6 +56,7 @@ app.get '/generate', (req, res) ->
   excludeFilters = parseFilterString(req.query.exclude)
 
   res.header('Content-Type', 'application/json')
+  res.header('Cache-Control', 'private, max-age=0')
   res.write('[{"progress":0}')
 
   stream = new TokenBinStream
@@ -65,6 +76,9 @@ app.get '/generate', (req, res) ->
     stream.removeAllListeners()
     stream.destroy()
 
-app.use(express.static('public'))
+app.use(express.static(__dirname + '/../dist', {
+  immutable: true
+  index: false
+}))
 
 module.exports = app

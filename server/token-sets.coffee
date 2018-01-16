@@ -4,8 +4,8 @@ SuffixedCompaniesTokenSet = require('./SuffixedCompaniesTokenSet')
 
 factories =
   function: (filter) -> new FunctionTokenSet(filter.function, filter.maxNgramSize)
-  text: (filter) -> new TextTokenSet(filter.path, filter.maxNgramSize)
+  text: (filter) -> new TextTokenSet("#{__dirname}/#{filter.path}", filter.maxNgramSize)
   suffixedCompanies: -> new SuffixedCompaniesTokenSet(filter.maxNgramSize)
 
-for id, filter of require('../lib/Filters')
+for id, filter of require('./Filters')
   module.exports[id] = factories[filter.logic](filter)

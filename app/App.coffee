@@ -1,10 +1,9 @@
 $ = require('jquery')
 oboe = require('oboe')
-queryString = require('query-string')
 
 Blacklist = require('./models/Blacklist')
 FilterView = require('./views/FilterView')
-Filters = require('../lib/Filters')
+Filters = require('../server/Filters')
 TokenListView = require('./views/TokenListView')
 ProgressView = require('./views/ProgressView')
 
@@ -29,14 +28,14 @@ module.exports = class App
 
   # Starts an HTTP request to stream the tokens again.
   refresh: ->
-    options = @_getOptions()
-    return if @lastOptions? && @lastOptions.include == options.include && @lastOptions.exclude == options.exclude
+    optionsString = @_getOptionsString()
+    return if @lastOptionsString == optionsString
 
     @_currentStream?.abort()
 
     @tokenListView.setTokenList([]).render()
 
-    @_currentStream = oboe("/generate?#{queryString.stringify(options)}")
+    @_currentStream = oboe("/generate?#{optionsString}")
       .node '![*]', (obj) =>
         if obj.progress?
           @progressView.setProgress(obj.progress)
@@ -47,7 +46,7 @@ module.exports = class App
           throw new Error("Unexpected object in stream: #{JSON.stringify(obj)}")
         oboe.drop
 
-    @lastOptions = options
+    @lastOptionsString = optionsString
 
   # Saves the state to the server and refreshes the output.
   #
@@ -58,12 +57,12 @@ module.exports = class App
 
   # Sends an AJAX request to Overview.
   #
-  # This is like $.ajax, but it adds @options.server to the (relative) URL and
+  # This is like $.ajax, but it adds @options.origin to the (relative) URL and
   # @options.apiToken to an Authorization header.
   _overviewAjax: (options) ->
     obj = {}
     (obj[k] = v) for k, v of options
-    obj.url = "#{@options.server}#{obj.url}"
+    obj.url = "#{@options.origin}#{obj.url}"
     obj.beforeSend = (xhr) =>
       xhr.setRequestHeader('Authorization', "Basic #{new Buffer("#{@options.apiToken}:x-auth-token").toString('base64')}")
     $.ajax(obj)
@@ -82,27 +81,43 @@ module.exports = class App
     @_overviewAjax
       type: 'GET'
       url: '/api/v1/store/state'
-      success: (state) => @setState(state)
+      success: (state) =>
+        # Sanitize state. Useful when debugging plugins and we get the state
+        # from a different plugin
+        state =
+          version: 1
+          filters: state?.version == 1 && state.filters || {
+            include: {}
+            exclude: { 'googlebooks-words.eng': null, 'numbers': null }
+          }
+          blacklist: state?.version == 1 && state.blacklist || []
+        @setState(state)
       error: (xhr, textStatus, errorThrown) =>
         if xhr.status != 404
           console.warn("Unexpected error fetching state", xhr, textStatus, errorThrown)
         @setState({})
 
-  # Returns the query-string options we'll pass to /generate.
+  # Returns the query-string we'll pass to /generate.
   #
-  # These are:
+  # Parameters:
   #
   # * `server`
   # * `documentSetId`
   # * `apiToken`
   # * `include`, a comma-separated list of Strings
   # * `exclude`, a comma-separated list of Strings
-  _getOptions: ->
-    server: @options.server
-    documentSetId: @options.documentSetId
-    apiToken: @options.apiToken
-    include: @filters.include.join(',')
-    exclude: @filters.exclude.join(',')
+  _getOptionsString: ->
+    params = [
+      [ 'server', @options.server ]
+      [ 'documentSetId', @options.documentSetId ]
+      [ 'apiToken', @options.apiToken ]
+      [ 'include', @filters.include.join(',') ]
+      [ 'exclude', @filters.exclude.join(',') ]
+    ]
+
+    params
+      .map((arr) => "#{encodeURIComponent(arr[0])}=#{encodeURIComponent(arr[1])}")
+      .join('&')
 
   # Returns the current state, for saving to the server.
   #
@@ -191,4 +206,4 @@ module.exports = class App
     window.parent.postMessage({
       call: 'setDocumentListParams'
       args: [ q: quotedToken ]
-    }, @options.server)
+    }, @options.origin)

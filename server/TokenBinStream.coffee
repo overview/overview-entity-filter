@@ -92,12 +92,12 @@ class NgramTokenListBuilder
 # Callers should handle 'error' events. They do happen.
 module.exports = class TokenBinStream extends stream.Readable
   constructor: (@options) ->
+    super(objectMode: true)
+
     throw new Error('Must pass options.server, the Overview server base URL') if !@options.server
     throw new Error('Must pass options.apiToken, the API token') if !@options.apiToken
     throw new Error('Must pass options.documentSetId, the document set ID') if !@options.documentSetId
     throw new Error('Must pass options.filters, an Object with `include` and `exclude` Filter arrays') if !@options.filters
-
-    super(objectMode: true)
 
     @_readTimeout = null # If set, the user called read() and we haven't called push() for it yet
 
