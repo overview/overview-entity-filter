@@ -33,15 +33,12 @@ if [ $MAJOR_VERSION_INT -eq $OLD_MAJOR_VERSION_INT ] && [ $MINOR_VERSION_INT -lt
 # Let user re-release the current version, in case something went wrong last release
 if [ $MAJOR_VERSION_INT -eq $OLD_MAJOR_VERSION_INT ] && [ $MINOR_VERSION_INT -eq $OLD_MINOR_VERSION_INT ] && [ $PATCH_VERSION_INT -lt $OLD_PATCH_VERSION_INT ]; then version_too_small; fi
 
-"$DIR"/integration-test/run-in-docker-compose || exit 1
-
-docker build --pull "$DIR" || exit 1
-
 (cd "$DIR" \
+  && integration-test/run-in-docker-compose \
   && sed -i -e "s/\"version\": \".*\"/\"version\": \"$PATCH_VERSION\"/" package.json \
   && git add package.json \
   && git commit -m "v$PATCH_VERSION" \
+  && git push \
   && git tag "v$PATCH_VERSION" \
-  && git push origin "v$PATCH_VERSION" \
-  && git push
+  && git push origin "v$PATCH_VERSION"
 )
