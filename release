@@ -33,16 +33,7 @@ if [ $MAJOR_VERSION_INT -eq $OLD_MAJOR_VERSION_INT ] && [ $MINOR_VERSION_INT -lt
 # Let user re-release the current version, in case something went wrong last release
 if [ $MAJOR_VERSION_INT -eq $OLD_MAJOR_VERSION_INT ] && [ $MINOR_VERSION_INT -eq $OLD_MINOR_VERSION_INT ] && [ $PATCH_VERSION_INT -lt $OLD_PATCH_VERSION_INT ]; then version_too_small; fi
 
-docker build \
-  --pull \
-  -t overview/overview-entity-filter:$PATCH_VERSION \
-  -t overview/overview-entity-filter:$MINOR_VERSION \
-  -t overview/overview-entity-filter:$MAJOR_VERSION \
-  "$DIR"
-
-docker push overview/overview-entity-filter:$PATCH_VERSION
-docker push overview/overview-entity-filter:$MINOR_VERSION
-docker push overview/overview-entity-filter:$MAJOR_VERSION
+docker build --pull "$DIR" || exit 1
 
 (cd "$DIR" \
   && sed -i -e "s/\"version\": \".*\"/\"version\": \"$PATCH_VERSION\"/" package.json \
