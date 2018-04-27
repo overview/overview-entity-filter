@@ -1,10 +1,6 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
-
-const extractLess = new ExtractTextPlugin({
-  filename: '[name].[contenthash].css',
-})
 
 module.exports = {
   context: __dirname + '/app',
@@ -17,6 +13,7 @@ module.exports = {
   resolve: {
     extensions: [ '.js', '.coffee' ],
   },
+  mode: 'production',
   module: {
     rules: [
       {
@@ -34,18 +31,18 @@ module.exports = {
       },
       {
         test: /\.(css|less)$/,
-        use: extractLess.extract({
-          use: [
-            { loader: 'css-loader', },
-            { loader: 'less-loader', },
-          ],
-          fallback: 'style-loader',
-        }),
+        use: [
+          MiniCssExtractPlugin.loader,
+          'css-loader',
+          'less-loader',
+        ],
       },
     ],
   },
   plugins: [
-    extractLess,
+    new MiniCssExtractPlugin({
+      filename: '[name].[contenthash].css',
+    }),
     new HtmlWebpackPlugin({
       title: 'Entity Filter',
       filename: 'show',
