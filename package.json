@@ -27,9 +27,9 @@
   },
   "homepage": "https://github.com/overview/overview-word-filter",
   "dependencies": {
-    "coffeescript": "^2.1.1",
+    "coffeescript": "^2.2.4",
     "debug": "^3.1.0",
-    "express": "^4.13.1",
+    "express": "^4.16.3",
     "js-native-ternary-buffer-tree": "0.1.0",
     "js-sorted-set": "^0.2.0",
     "morgan": "^1.6.1",
@@ -37,19 +37,19 @@
     "overview-js-token-bin": "0.0.5"
   },
   "devDependencies": {
-    "base64-inline-loader": "^1.1.0",
+    "base64-inline-loader": "^1.1.1",
     "coffee-loader": "^0.9.0",
-    "css-loader": "^0.28.8",
+    "css-loader": "^0.28.11",
     "events": "^1.1.1",
     "extract-text-webpack-plugin": "^3.0.2",
     "html-webpack-plugin": "^2.30.1",
-    "jquery": "^3.2.1",
+    "jquery": "^3.3.1",
     "less": "^2.7.3",
-    "less-loader": "^4.0.5",
+    "less-loader": "^4.1.0",
     "lodash.template": "^4.4.0",
     "numeral": "^2.0.6",
     "style-loader": "^0.19.1",
-    "uglifyjs-webpack-plugin": "^1.1.6",
-    "webpack": "^3.10.0"
+    "uglifyjs-webpack-plugin": "^1.2.5",
+    "webpack": "^3.11.0"
   }
 }
