@@ -1,6 +1,6 @@
 {
   "name": "overview-entity-filter",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Overview plugin that filters words, looking for entities",
   "main": "server.js",
   "repository": {
