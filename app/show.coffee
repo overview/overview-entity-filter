@@ -1,4 +1,4 @@
-require('./show.less') # compile styles
+require('./show.scss') # compile styles
 
 $ = require('jquery')
 App = require('./App')

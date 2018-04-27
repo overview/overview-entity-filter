@@ -30,11 +30,11 @@ module.exports = {
         use: 'base64-inline-loader',
       },
       {
-        test: /\.(css|less)$/,
+        test: /\.(css|scss)$/,
         use: [
           MiniCssExtractPlugin.loader,
           'css-loader',
-          'less-loader',
+          'sass-loader',
         ],
       },
     ],

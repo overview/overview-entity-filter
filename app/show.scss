@@ -1,10 +1,10 @@
-@text-color: #0d1223;
-@text-muted: #918f90;
-@brand-danger: #d9534f;
-@background-selected: #f7f7f7;
-@border-color: #eee;
+$text-color: #0d1223;
+$text-muted: #918f90;
+$brand-danger: #d9534f;
+$background-selected: #f7f7f7;
+$border-color: #eee;
 
-@import (inline) 'loading.css';
+@import 'loading.css';
 
 * {
   box-sizing: border-box;
@@ -25,7 +25,7 @@ html, body, #main {
   overflow: hidden;
   font-family: sans-serif;
 
-  color: @text-color;
+  color: $text-color;
   line-height: 1.5rem;
 }
 
@@ -117,7 +117,7 @@ html, body, #main {
       font: inherit;
       font-weight: bold;
       width: 1rem;
-      color: @brand-danger;
+      color: $brand-danger;
       opacity: 0.00001; // non-zero, so integration test sees it
     }
   }
@@ -132,13 +132,13 @@ html, body, #main {
   }
 
   td.frequency, td.n-documents {
-    color: @text-muted;
+    color: $text-muted;
     font-size: .9rem;
   }
 
   span.title {
     display: block;
-    color: @text-muted;
+    color: $text-muted;
     font-size: .8rem;
     white-space: nowrap;
     width: 1px;
@@ -173,9 +173,9 @@ html, body, #main {
     }
 
     &.selected {
-      background: @background-selected;
-      border-top-color: @border-color;
-      border-bottom-color: @border-color;
+      background: $background-selected;
+      border-top-color: $border-color;
+      border-bottom-color: $border-color;
 
       span.description {
         display: block;
@@ -208,7 +208,7 @@ html, body, #main {
     span.description {
       font-size: .9rem;
       font-family: serif;
-      color: @text-muted;
+      color: $text-muted;
     }
   }
 
@@ -227,7 +227,7 @@ html, body, #main {
         display: inline-block;
         cursor: pointer;
         font: inherit;
-        color: @brand-danger;
+        color: $brand-danger;
       }
     }
   }
