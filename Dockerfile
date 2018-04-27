@@ -35,7 +35,7 @@ FROM common AS build
 # Compile dist/ directory: all our static files
 COPY . /app/
 RUN set -x \
-      && apk add nodejs-npm python make g++ \
+      && apk add --update --no-cache nodejs-npm python make g++ \
       && npm install \
       && node_modules/.bin/webpack \
       && rm -rf node_modules \
