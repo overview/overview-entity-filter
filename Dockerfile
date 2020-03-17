@@ -1,5 +1,5 @@
 # common: base image
-FROM alpine:3.7 AS common
+FROM alpine:3.11.3 AS common
 
 ENV PORT 80
 EXPOSE 80
