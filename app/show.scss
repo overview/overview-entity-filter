@@ -87,11 +87,20 @@ html, body, #main {
 
   td, th {
     text-align: left;
-    padding: .5rem 1rem;
+    padding: .5rem 1rem .5rem 0;
   }
 
   td.token {
     cursor: pointer; // Because it selects the word
+    position: relative; // so we can size the span within
+
+    span.name {
+      display: block;
+      position: absolute;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
   }
 
   td.token, th.token {
