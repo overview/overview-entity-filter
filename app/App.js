@@ -247,7 +247,7 @@ module.exports = (App = class App {
 
     return window.parent.postMessage({
       call: 'setDocumentListParams',
-      args: [ {q: quotedToken} ]
+      args: [ {q: `text:${quotedToken}` } ]
     }, this.options.origin);
   }
 });
