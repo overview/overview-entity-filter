@@ -25,7 +25,7 @@
   "homepage": "https://github.com/overview/overview-word-filter",
   "dependencies": {
     "debug": "^3.1.0",
-    "express": "^4.16.3",
+    "express": "^4.18.2",
     "js-native-ternary-buffer-tree": "^0.2.0",
     "js-sorted-set": "^0.2.0",
     "morgan": "^1.6.1",
